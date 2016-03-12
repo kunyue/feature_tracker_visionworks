@@ -23,6 +23,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     {
         cv::Mat img;
         img = bridge_ptr->image.rowRange(ROW * i, ROW * (i + 1));
+        trackerData[i].image = img.clone();
         vx_imagepatch_addressing_t src1_addr;
         src1_addr.dim_x = img.cols;
         src1_addr.dim_y = img.rows;
@@ -45,12 +46,12 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
            trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
             //printvector(prev_pts);
            trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-           for(unsigned int i = 0; i< trackerData[i].prev_pts.size(); i++)
+           for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
            {
 
-               trackerData[i].prev_ids.push_back( trackerData[i].id_count);
-               trackerData[i].prev_track_cnt.push_back(1);
-               trackerData[i].id_count++;
+               trackerData[j].prev_ids.push_back( trackerData[i].id_count);
+               trackerData[j].prev_track_cnt.push_back(1);
+               trackerData[j].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
            }
        }
@@ -80,15 +81,15 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             trackerData[i].cur_ids.clear();
             trackerData[i].cur_track_cnt.clear();
             trackerData[i].ransac_pts.clear();
-            for(unsigned int i = 0; i < trackerData[i].forw_pts.size(); i++)
+            for(unsigned int j = 0; j < trackerData[i].forw_pts.size(); j++)
             {
-                if(trackerData[i].forw_pts[i].x != -1)
+                if(trackerData[i].forw_pts[j].x != -1)
                 {
-                    trackerData[i].cur_pts.push_back(trackerData[i].forw_pts[i]);
-                    trackerData[i].cur_ids.push_back(trackerData[i].prev_ids[i]);
-                    trackerData[i].cur_track_cnt.push_back(++trackerData[i].prev_track_cnt[i]);
+                    trackerData[i].cur_pts.push_back(trackerData[i].forw_pts[j]);
+                    trackerData[i].cur_ids.push_back(trackerData[i].prev_ids[j]);
+                    trackerData[i].cur_track_cnt.push_back(++trackerData[i].prev_track_cnt[j]);
 
-                    trackerData[i].ransac_pts.push_back(trackerData[i].prev_pts[i]);
+                    trackerData[i].ransac_pts.push_back(trackerData[i].prev_pts[j]);
                 }
             }
 
@@ -114,12 +115,109 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             trackerData[i].tracker->optIn(trackerData[i].cur_pts); 
         }
     }
-    trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
-    vxReleaseImage(&trackerData[i].src1);
+
 }
 
     //show and pub
+if(trackerData[0].isInit && trackerData[0].cnt==0)
+{
 
+    ROS_INFO("pub_image");
+    sensor_msgs::PointCloud feature;
+    sensor_msgs::ChannelFloat32 id_of_point;
+    feature.header = img_msg->header;
+    for(int i = 0 ;i < NUM_OF_CAM;i++)
+    {
+        auto un_pts = trackerData[i].undistortedPoints(trackerData[i].cur_pts);
+        auto &ids = trackerData[i].cur_ids;
+        trackerData[i].goodfeature.clear();
+        for (unsigned int j = 0; j < ids.size(); j++)
+        {
+            int p_id = ids[j];
+            geometry_msgs::Point32 p;
+            p.x = un_pts[j].x;
+            p.y = un_pts[j].y;
+            p.z = 1;
+
+            if(p.x!=p.x || p.y!=p.y)
+            {
+                ROS_WARN("Nan problem!");
+                trackerData[i].goodfeature.push_back(false);
+            //ROS_BREAK();
+                continue;
+            }
+
+            if(p.x > 20 || p.y > 20)
+            {
+            //ROS_WARN("not good point");
+                continue;
+                trackerData[i].goodfeature.push_back(false);
+
+            }
+            trackerData[i].goodfeature.push_back(true);
+
+            feature.points.push_back(p);
+            id_of_point.values.push_back(p_id* NUM_OF_CAM + i);
+        }
+    }
+    feature.channels.push_back(id_of_point);
+    pub_img.publish(feature);
+
+
+
+    ROS_INFO("Show image"); 
+
+    nvx::Timer showTimer;
+    showTimer.tic();    
+
+    std::vector<cv::Mat> tmp_img;
+    cv::cvtColor(bridge_ptr->image, tmp_img, CV_GRAY2RGB);
+    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    {
+        tmp_img.push_back(trackerData[i].image);
+        for(unsigned j = 0; j < trackerData[i].cur_pts.size(); j++)
+        {
+            if(trackerData[i].goodfeature[j])
+            {
+                double len = std::min(1.0, 1.0 * trackerData[i].cur_track_cnt[j] / 20);
+                cv::circle(tmp_img[i], trackerData[i].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
+            }
+            else
+            {
+                    //cv::circle(tmp_img, cur_pts[i], 2, cv::Scalar(255, 255, 255 ), 2);
+            }
+        }
+    }
+//combine NUM_OF_CAMERA PICTURE
+    cv::Size size(COL * NUM_OF_CAM, ROW); 
+    cv::Mat img_merge;  
+
+    img_merge.create(size, CV_8UC1);  
+    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    {
+        cv::Mat block_img = img_merge(cv::Rect(i * COL, 0, (i + 1) * COL, ROW));
+        tmp_img[i].copyTo(block_img);
+
+    }
+
+
+    cv::imshow("features",img_merge);
+    double show_ms = showTimer.toc();
+    std::cout << "show Time : " << show_ms << " ms" << std::endl  ;
+
+
+    cv::waitKey(1);
+
+
+}
+
+
+//release
+for(int i = 0;i < NUM_OF_CAM; i++)
+{
+    trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
+    vxReleaseImage(&trackerData[i].src1);
+}
 
 double total_ms = totalTimer.toc();
 std::cout << "Total Time : " << total_ms << " ms" << std::endl ;
@@ -186,74 +284,7 @@ int main(int argc, char* argv[])
 
 
 
-                       /*
-                ROS_INFO("pub_image");
-                sensor_msgs::PointCloud feature;
-                sensor_msgs::ChannelFloat32 id_of_point;
-                feature.header = img_msg->header;
-                auto un_pts = undistortedPoints(cur_pts);
-                auto &ids = cur_ids;
-                std::vector<bool> goodfeature;
-                for (unsigned int j = 0; j < ids.size(); j++)
-                {
-                    int p_id = ids[j];
-                    geometry_msgs::Point32 p;
-                    p.x = un_pts[j].x;
-                    p.y = un_pts[j].y;
-                    p.z = 1;
-
-                    if(p.x!=p.x || p.y!=p.y)
-                    {
-                        ROS_WARN("Nan problem!");
-                        goodfeature.push_back(false);
-                        //ROS_BREAK();
-                        continue;
-                    }
-
-                    if(p.x > 20 || p.y > 20)
-                    {
-                        //ROS_WARN("not good point");
-                        continue;
-                        goodfeature.push_back(false);
-
-                    }
-                    goodfeature.push_back(true);
-
-                    feature.points.push_back(p);
-                    id_of_point.values.push_back(p_id);
-                }
-                feature.channels.push_back(id_of_point);
-                pub_img.publish(feature);
-        
-            */
 
 
-            /*
-            ROS_INFO("Show image"); 
 
-            nvx::Timer showTimer;
-            showTimer.tic();    
 
-            cv::Mat tmp_img;
-            cv::cvtColor(bridge_ptr->image, tmp_img, CV_GRAY2RGB);
-            
-            for(unsigned i = 0; i < cur_pts.size(); i++)
-            {
-                if(goodfeature[i])
-                {
-                    double len = std::min(1.0, 1.0 * cur_track_cnt[i] / 20);
-                    cv::circle(tmp_img, cur_pts[i], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
-                }
-                else
-                {
-                    //cv::circle(tmp_img, cur_pts[i], 2, cv::Scalar(255, 255, 255 ), 2);
-                }
-            }
-            cv::imshow("features",tmp_img);
-            double show_ms = showTimer.toc();
-            ROS_INFO("Total %d featrues",(int)cur_pts.size());
-            //std::cout << "show Time : " << show_ms << " ms" << std::endl  ;
-
-            
-            cv::waitKey(1);
-            */

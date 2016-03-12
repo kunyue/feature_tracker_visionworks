@@ -67,6 +67,8 @@ class FeatureTracker
 		//std::unique_ptr<nvxio::Render> renderer(nvxio::createDefaultRender(context, "Feature Tracker", 752, 480));
 		vx_image mask;
 		bool isInit;
+		cv::Mat image;
+
 
 		vx_image src1;
 		int id_count;
@@ -79,5 +81,6 @@ class FeatureTracker
 		vector<int> cur_track_cnt;
 		vector<int> prev_track_cnt;
 		vector<int> ransac_track_cnt;
+		vector<bool> goodfeature;
 
 };
