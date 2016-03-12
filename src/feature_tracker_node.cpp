@@ -43,7 +43,7 @@
 // Utility functions
 //
 int cnt = 0;
-int ransac_thres;
+double ransac_thres;
 using namespace std;
 using namespace camodocal;
 camodocal::CameraPtr m_camera;
