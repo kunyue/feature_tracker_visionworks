@@ -38,24 +38,24 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         if( !trackerData[i].isInit)
         {
-         trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
-         trackerData[i].isInit = true;
-         cout<<"isInit"<<endl;
+           trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
+           trackerData[i].isInit = true;
+           cout<<"isInit"<<endl;
 
-         trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
+           trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
             //printvector(prev_pts);
-         trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-         for(unsigned int i = 0; i< trackerData[i].prev_pts.size(); i++)
-         {
+           trackerData[i].tracker->optIn( trackerData[i].prev_pts);
+           for(unsigned int i = 0; i< trackerData[i].prev_pts.size(); i++)
+           {
 
-             trackerData[i].prev_ids.push_back( trackerData[i].id_count);
-             trackerData[i].prev_track_cnt.push_back(1);
-             trackerData[i].id_count++;
+               trackerData[i].prev_ids.push_back( trackerData[i].id_count);
+               trackerData[i].prev_track_cnt.push_back(1);
+               trackerData[i].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
-         }
-     }
-     else 
-     {
+           }
+       }
+       else 
+       {
 
         trackTimer.tic();  
 
@@ -113,17 +113,18 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             trackerData[i].prev_track_cnt = trackerData[i].cur_track_cnt;
             trackerData[i].tracker->optIn(trackerData[i].cur_pts); 
         }
-        trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
-        vxReleaseImage(&trackerData[i].src1);
     }
+    trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
+    vxReleaseImage(&trackerData[i].src1);
+}
 
     //show and pub
 
 
-    double total_ms = totalTimer.toc();
-    std::cout << "Total Time : " << total_ms << " ms" << std::endl ;
-    cout<<endl<<endl;
-    ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
+double total_ms = totalTimer.toc();
+std::cout << "Total Time : " << total_ms << " ms" << std::endl ;
+cout<<endl<<endl;
+ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
 }
 
 
