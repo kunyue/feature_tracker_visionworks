@@ -16,6 +16,7 @@
         <param name="lk_num_iters" type="int" value="30"/> 
         <param name="lk_win_size" type="int" value="21"/> 
         <param name="calib_file" type="string" value="$(find visionworks)/config/04_camera_calib.yaml"/> 
+        <param name="ransac_thresh" type="int" value="0.5"/> 
     </node>
 
 	

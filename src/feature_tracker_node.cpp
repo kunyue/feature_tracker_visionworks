@@ -38,7 +38,7 @@
 #define MAX_CNT 100
 #define FREQ 3
 #define RANSAC true
-#define RANSAC_THRESHOLD 3
+#define RANSAC_THRESsHOLD 3
 //
 // Utility functions
 //
@@ -260,33 +260,7 @@ void printvector(vector<cv::Point2f> &v)
     cout<<"print finish"<<endl;
 }
 
-void ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point2f> curr)
-{
-    //ROS_INFO("ransac begin!");
-    if((int)curr.size() < 4 )
-        return;
-    vector<uchar> status;
-    cv::findFundamentalMat(prev, curr, cv::FM_RANSAC, ransac_thres, 0.99, status);
-    int num = curr.size();
-    cur_pts.clear();
-    cur_ids.clear();
-    cur_track_cnt.clear();
 
-
-    for(unsigned int i = 0; i < curr.size(); i++)
-    {
-        //cout<<"prev_points "<<prev[i].x<<"  "<<prev[i].y<<"  curr points "<<curr[i].x<<"   "<<curr[i].y<<"status  "<<(int)status[i]<<endl;
-        if((int)status[i] == 1)
-        {
-            cur_pts.push_back(curr[i]);
-            cur_ids.push_back(ransac_ids[i]);
-            cur_track_cnt.push_back(ransac_track_cnt[i]);
-        }
-    }
-
-    ROS_INFO("RANSAC delete %d features" , num - (int)cur_pts.size());
-
-}
 
 vector<cv::Point2f> undistortedPoints(std::vector<cv::Point2f> v)
 {
@@ -328,6 +302,39 @@ vector<cv::Point2f> undistortedPoints(std::vector<cv::Point2f> v)
     }
     return un_pts;
 }
+
+void ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point2f> curr)
+{
+    //ROS_INFO("ransac begin!");
+    if((int)curr.size() < 4 )
+        return;
+    vector<uchar> status;
+        // ransac after undistort
+    std::vector<cv::Point2f> prev_un = undistortedPoints(prev);
+    std::vector<cv::Point2f> curr_un = undistortedPoints(curr);
+
+    cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, ransac_thres, 0.99, status);
+    int num = curr.size();
+    cur_pts.clear();
+    cur_ids.clear();
+    cur_track_cnt.clear();
+
+
+    for(unsigned int i = 0; i < curr.size(); i++)
+    {
+        //cout<<"prev_points "<<prev[i].x<<"  "<<prev[i].y<<"  curr points "<<curr[i].x<<"   "<<curr[i].y<<"status  "<<(int)status[i]<<endl;
+        if((int)status[i] == 1)
+        {
+            cur_pts.push_back(curr[i]);
+            cur_ids.push_back(ransac_ids[i]);
+            cur_track_cnt.push_back(ransac_track_cnt[i]);
+        }
+    }
+
+    ROS_INFO("RANSAC delete %d features" , num - (int)cur_pts.size());
+
+}
+
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
