@@ -49,9 +49,9 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
            for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
            {
 
-               trackerData[j].prev_ids.push_back( trackerData[i].id_count);
-               trackerData[j].prev_track_cnt.push_back(1);
-               trackerData[j].id_count++;
+               trackerData[i].prev_ids.push_back( trackerData[i].id_count);
+               trackerData[i].prev_track_cnt.push_back(1);
+               trackerData[i].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
            }
        }
