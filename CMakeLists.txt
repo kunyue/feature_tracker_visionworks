@@ -22,7 +22,9 @@ catkin_package(
 
 add_executable(feature_tracker 
 	src/feature_tracker_node.cpp 
-	src/nvx_feature_tracker.cpp)
+	src/nvx_feature_tracker.cpp
+	src/feature_tracker.cpp)
+
 
 
 target_link_libraries(feature_tracker ${catkin_LIBRARIES} ${OpenCV_LIBS} ${VisionWorks} libnvxio.a -lfreetype   -lGL -lglfw   -lXrandr -lXi -lXxf86vm -lX11   -lgstpbutils-1.0 -lgstapp-1.0 -lgstbase-1.0 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0    -L/usr/local/cuda-6.5/lib -lvisionworks -lcudart   -L/usr/local/cuda-6.5/lib -L/usr/local/cuda-6.5/lib/stubs -lcudart -lcublas -lcufft -lnppc -lnppi -lnpps   -L/usr/local/cuda-6.5/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts  -lcufft -lnpps -lnppi -lnppc -lcudart -ltbb -lrt -lpthread -lm -ldl)
