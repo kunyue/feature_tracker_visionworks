@@ -171,7 +171,6 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
     showTimer.tic();    
 
     std::vector<cv::Mat> tmp_img;
-    cv::cvtColor(bridge_ptr->image, tmp_img, CV_GRAY2RGB);
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
         tmp_img.push_back(trackerData[i].image);
@@ -192,13 +191,14 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
     cv::Size size(COL * NUM_OF_CAM, ROW); 
     cv::Mat img_merge;  
 
+
     img_merge.create(size, CV_8UC1);  
-    cout<<"line 196"<<endl;
+
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
         cv::Mat block_img = img_merge(cv::Rect(i * COL, 0, (i + 1) * COL, ROW));
         tmp_img[i].copyTo(block_img);
-        cout<<"line201"<<endl;
+
 
     }
 
