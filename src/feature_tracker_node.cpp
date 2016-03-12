@@ -173,7 +173,9 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
     std::vector<cv::Mat> tmp_img;
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
-        tmp_img.push_back(trackerData[i].image);
+        cv::Mat color_img;
+        cv::cvtColor(trackerData[i].image, color_img, CV_GRAY2RGB);
+        tmp_img.push_back(color_img);
         for(unsigned j = 0; j < trackerData[i].cur_pts.size(); j++)
         {
             if(trackerData[i].goodfeature[j])
@@ -192,7 +194,7 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
     cv::Mat img_merge;  
 
 
-    img_merge.create(size, CV_8UC1);  
+    img_merge.create(size, CV_8UC3);  
 
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
