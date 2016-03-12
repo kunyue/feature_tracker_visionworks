@@ -1,5 +1,14 @@
 #include "feature_tracker.h"
 
+FeatureTracker::FeatureTracker()
+{
+	cnt = 0;
+	mask = NULL;
+	isInit = false;
+	id_count = 0;
+	
+}
+
 void FeatureTracker::changeType(vx_array vx_pt, vector<cv::Point2f> &cv_pt )
 {
 

@@ -57,7 +57,7 @@ class FeatureTracker
 		vector<cv::Point2f> undistortedPoints(std::vector<cv::Point2f> v);
 		void ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point2f> curr);
 
-		int cnt = 0;
+		int cnt ;
 		double ransac_thres;
 
 		camodocal::CameraPtr m_camera;
@@ -65,13 +65,13 @@ class FeatureTracker
 		nvx::FeatureTracker *tracker;
 		//std::unique_ptr<nvx::FeatureTracker> tracker(nvx::FeatureTracker::createHarrisPyrLK(context, params));
 		//std::unique_ptr<nvxio::Render> renderer(nvxio::createDefaultRender(context, "Feature Tracker", 752, 480));
-		vx_image mask = NULL;
-		bool isInit = false;
+		vx_image mask;
+		bool isInit;
 
 		vx_image src1;
-		int id_count = 0;
+		int id_count;
 		        
-		double proc_ms = 0;
+		double proc_ms;
 		vector<cv::Point2f> prev_pts, cur_pts, forw_pts, harris_pts, ransac_pts;
 		vector<int> cur_ids;
 		vector<int> prev_ids;
