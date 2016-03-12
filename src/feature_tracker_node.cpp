@@ -34,88 +34,158 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         trackerData[i].src1 = vxCreateImageFromHandle(context, VX_DF_IMAGE_U8, &src1_addr, src1_ptrs, VX_IMPORT_TYPE_HOST);
         NVXIO_CHECK_REFERENCE(trackerData[i].src1);
-    
+
 
         if( !trackerData[i].isInit)
         {
-             trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
-             trackerData[i].isInit = true;
-             cout<<"isInit"<<endl;
-        
-             trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
+         trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
+         trackerData[i].isInit = true;
+         cout<<"isInit"<<endl;
+
+         trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
             //printvector(prev_pts);
-             trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-            for(unsigned int i = 0; i< trackerData[i].prev_pts.size(); i++)
-            {
+         trackerData[i].tracker->optIn( trackerData[i].prev_pts);
+         for(unsigned int i = 0; i< trackerData[i].prev_pts.size(); i++)
+         {
 
-                 trackerData[i].prev_ids.push_back( trackerData[i].id_count);
-                 trackerData[i].prev_track_cnt.push_back(1);
-                 trackerData[i].id_count++;
+             trackerData[i].prev_ids.push_back( trackerData[i].id_count);
+             trackerData[i].prev_track_cnt.push_back(1);
+             trackerData[i].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
-            }
-        }
-        else 
+         }
+     }
+     else 
+     {
+
+        trackTimer.tic();  
+
+        ROS_INFO("Tracking");
+        trackerData[i].tracker->track(trackerData[i].src1, trackerData[i].mask);
+
+        double track_ms = trackTimer.toc();
+        std::cout << "track Time : " << track_ms << " ms" << std::endl  ;
+        if(trackerData[i].cnt !=0 )
         {
-		
-            trackTimer.tic();  
+            ROS_INFO("Continue tracking");
+            trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() ,trackerData[i].forw_pts);
+            trackerData[i].tracker->optIn(trackerData[i].forw_pts);  
 
-		    ROS_INFO("Tracking");
-            trackerData[i].tracker->track(trackerData[i].src1, trackerData[i].mask);
-
-            double track_ms = trackTimer.toc();
-            std::cout << "track Time : " << track_ms << " ms" << std::endl  ;
-            if(trackerData[i].cnt !=0 )
-            {
-                ROS_INFO("Continue tracking");
-                trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() ,trackerData[i].forw_pts);
-                trackerData[i].tracker->optIn(trackerData[i].forw_pts);  
-
-            }
-            else
-            {
-                ROS_INFO("processing tracking result");
-                trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() ,trackerData[i].forw_pts);
+        }
+        else
+        {
+            ROS_INFO("processing tracking result");
+            trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() ,trackerData[i].forw_pts);
             //printvector(forw_pts);
-                trackerData[i].cur_pts.clear();
-                trackerData[i].cur_ids.clear();
-                trackerData[i].cur_track_cnt.clear();
-                trackerData[i].ransac_pts.clear();
-                for(unsigned int i = 0; i < trackerData[i].forw_pts.size(); i++)
+            trackerData[i].cur_pts.clear();
+            trackerData[i].cur_ids.clear();
+            trackerData[i].cur_track_cnt.clear();
+            trackerData[i].ransac_pts.clear();
+            for(unsigned int i = 0; i < trackerData[i].forw_pts.size(); i++)
+            {
+                if(trackerData[i].forw_pts[i].x != -1)
                 {
-                    if(trackerData[i].forw_pts[i].x != -1)
-                    {
-                        trackerData[i].cur_pts.push_back(trackerData[i].forw_pts[i]);
-                        trackerData[i].cur_ids.push_back(trackerData[i].prev_ids[i]);
-                        trackerData[i].cur_track_cnt.push_back(++trackerData[i].prev_track_cnt[i]);
+                    trackerData[i].cur_pts.push_back(trackerData[i].forw_pts[i]);
+                    trackerData[i].cur_ids.push_back(trackerData[i].prev_ids[i]);
+                    trackerData[i].cur_track_cnt.push_back(++trackerData[i].prev_track_cnt[i]);
 
-                        trackerData[i].ransac_pts.push_back(trackerData[i].prev_pts[i]);
-                    }
+                    trackerData[i].ransac_pts.push_back(trackerData[i].prev_pts[i]);
                 }
+            }
 
                 //ransac begin
-                trackerData[i].ransac_ids = trackerData[i].cur_ids;
-                trackerData[i].ransac_track_cnt = trackerData[i].cur_track_cnt;
-                if(RANSAC)
-                {
-                    ROS_INFO("ransac begin");
-                    trackerData[i].ransac(trackerData[i].ransac_pts, trackerData[i].cur_pts);
-                }
+            trackerData[i].ransac_ids = trackerData[i].cur_ids;
+            trackerData[i].ransac_track_cnt = trackerData[i].cur_track_cnt;
+            if(RANSAC)
+            {
+                ROS_INFO("ransac begin");
+                trackerData[i].ransac(trackerData[i].ransac_pts, trackerData[i].cur_pts);
+            }
 
-                ROS_INFO("Add new features");
-                trackerData[i].changeType(trackerData[i].tracker->getHarrisFeatures(), trackerData[i].harris_pts);
-                ROS_INFO("Find harris features %d",(int)trackerData[i].harris_pts.size());
+            ROS_INFO("Add new features");
+            trackerData[i].changeType(trackerData[i].tracker->getHarrisFeatures(), trackerData[i].harris_pts);
+            ROS_INFO("Find harris features %d",(int)trackerData[i].harris_pts.size());
                 //printvector(harris_pts);
-                trackerData[i].addFeatures();
-                ROS_INFO("Use features %d" ,(int)trackerData[i].cur_pts.size());
+            trackerData[i].addFeatures();
+            ROS_INFO("Use features %d" ,(int)trackerData[i].cur_pts.size());
                 //printresult();
-                trackerData[i].prev_pts = trackerData[i].cur_pts;
-                trackerData[i].prev_ids = trackerData[i].cur_ids;
-                trackerData[i].prev_track_cnt = trackerData[i].cur_track_cnt;
+            trackerData[i].prev_pts = trackerData[i].cur_pts;
+            trackerData[i].prev_ids = trackerData[i].cur_ids;
+            trackerData[i].prev_track_cnt = trackerData[i].cur_track_cnt;
+            trackerData[i].tracker->optIn(trackerData[i].cur_pts); 
+        }
+        trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
+        vxReleaseImage(&trackerData[i].src1);
+    }
 
-                //ROS_BREAK();
-                trackerData[i].tracker->optIn(trackerData[i].cur_pts);  
-                //tracker->printPerfs();
-                /*
+    //show and pub
+
+
+    double total_ms = totalTimer.toc();
+    std::cout << "Total Time : " << total_ms << " ms" << std::endl ;
+    cout<<endl<<endl;
+    ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
+}
+
+
+
+int main(int argc, char* argv[])
+{
+
+    //*************************************ros_init**************************
+    ros::init(argc,argv,"feature");
+    ros::NodeHandle n("~");
+    double harris_k, harris_thresh,ransac_thres;
+    int pyr_levels,lk_num_iters,lk_win_size,harris_cell_size,array_capacity;
+
+    n.getParam("harris_k", harris_k);
+    n.getParam("harris_thresh", harris_thresh);
+    n.getParam("pyr_levels", pyr_levels);
+    n.getParam("lk_num_iters", lk_num_iters);
+    n.getParam("lk_win_size", lk_win_size);
+    n.getParam("harris_cell_size", harris_cell_size);
+    n.getParam("array_capacity", array_capacity);
+
+    n.getParam("ransac_thresh", ransac_thres);
+
+    cout<<"ransac_thres    "<<ransac_thres<<endl;
+
+
+    string calib_file;
+    n.getParam("calib_file", calib_file);
+    cout<<"calib_file   "<<calib_file<<endl;
+
+
+    nvx::FeatureTracker::HarrisPyrLKParams params;
+
+    params.pyr_levels = pyr_levels;
+    params.lk_num_iters = lk_num_iters;
+    params.lk_win_size = lk_win_size;
+    params.harris_k = harris_k;
+    params.harris_thresh = harris_thresh;
+    params.harris_cell_size = harris_cell_size;
+    params.array_capacity = array_capacity;
+
+    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    {
+        trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file);
+        trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
+        trackerData[i].ransac_thres = ransac_thres;
+    }
+
+    ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
+
+    pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
+
+    ros::spin();
+
+
+}
+
+
+
+
+
+                       /*
                 ROS_INFO("pub_image");
                 sensor_msgs::PointCloud feature;
                 sensor_msgs::ChannelFloat32 id_of_point;
@@ -186,72 +256,3 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             
             cv::waitKey(1);
             */
-
-            }
-
-        }
-
-        double total_ms = totalTimer.toc();
-        std::cout << "Total Time : " << total_ms << " ms" << std::endl ;
-        cout<<endl<<endl;
-        ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
-
-        trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
-        vxReleaseImage(&trackerData[i].src1);
-    }
-}
-
-
-
-int main(int argc, char* argv[])
-{
-
-    //*************************************ros_init**************************
-    ros::init(argc,argv,"feature");
-    ros::NodeHandle n("~");
-    double harris_k, harris_thresh,ransac_thres;
-    int pyr_levels,lk_num_iters,lk_win_size,harris_cell_size,array_capacity;
-
-    n.getParam("harris_k", harris_k);
-    n.getParam("harris_thresh", harris_thresh);
-    n.getParam("pyr_levels", pyr_levels);
-    n.getParam("lk_num_iters", lk_num_iters);
-    n.getParam("lk_win_size", lk_win_size);
-    n.getParam("harris_cell_size", harris_cell_size);
-    n.getParam("array_capacity", array_capacity);
-    
-    n.getParam("ransac_thresh", ransac_thres);
-
-    cout<<"ransac_thres    "<<ransac_thres<<endl;
-
-
-    string calib_file;
-    n.getParam("calib_file", calib_file);
-    cout<<"calib_file   "<<calib_file<<endl;
-
-
-    nvx::FeatureTracker::HarrisPyrLKParams params;
-
-    params.pyr_levels = pyr_levels;
-    params.lk_num_iters = lk_num_iters;
-    params.lk_win_size = lk_win_size;
-    params.harris_k = harris_k;
-    params.harris_thresh = harris_thresh;
-    params.harris_cell_size = harris_cell_size;
-    params.array_capacity = array_capacity;
-
-    for(int i = 0 ;i < NUM_OF_CAM; i++)
-    {
-        trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file);
-        trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
-        trackerData[i].ransac_thres = ransac_thres;
-    }
-
-    ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
-
-    pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
-           
-    ros::spin();
-
-
-}
