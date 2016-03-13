@@ -33,7 +33,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         cv::Mat img;
         cout<<"image rows"<<bridge_ptr->image.rows<<endl;
         cout<<"grab  rows  "<<ROW * i<<"   "<<ROW * (i + 1)<<endl;
-        img = bridge_ptr->image.rowRange(ROW * i, ROW * (i + 1));
+        img = bridge_ptr->image.colRange(COL * i, COL * (i + 1));
         trackerData[i].image = img.clone();
         vx_imagepatch_addressing_t src1_addr;
         src1_addr.dim_x = img.cols;
