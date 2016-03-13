@@ -31,13 +31,16 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     for(int i = 0 ;i < NUM_OF_CAM ;i++)
     {
         cv::Mat img;
+        cout<<"line 34"<<endl;
         img = bridge_ptr->image.rowRange(ROW * i, ROW * (i + 1));
+        cout<<"line 36"<<endl;
         trackerData[i].image = img.clone();
         vx_imagepatch_addressing_t src1_addr;
         src1_addr.dim_x = img.cols;
         src1_addr.dim_y = img.rows;
         src1_addr.stride_x = sizeof(vx_uint8);
         src1_addr.stride_y = img.step;
+        cout<<"line 43"<<endl;
         void *src1_ptrs[] = {
             img.data
         };
