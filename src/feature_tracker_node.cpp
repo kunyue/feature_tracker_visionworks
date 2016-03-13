@@ -40,24 +40,24 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         if( !trackerData[i].isInit)
         {
-           trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
-           trackerData[i].isInit = true;
-           cout<<"isInit"<<endl;
+         trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
+         trackerData[i].isInit = true;
+         cout<<"isInit"<<endl;
 
-           trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
+         trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
             //printvector(prev_pts);
-           trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-           for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
-           {
+         trackerData[i].tracker->optIn( trackerData[i].prev_pts);
+         for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
+         {
 
-               trackerData[i].prev_ids.push_back( trackerData[i].id_count);
-               trackerData[i].prev_track_cnt.push_back(1);
-               trackerData[i].id_count++;
+             trackerData[i].prev_ids.push_back( trackerData[i].id_count);
+             trackerData[i].prev_track_cnt.push_back(1);
+             trackerData[i].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
-           }
-       }
-       else 
-       {
+         }
+     }
+     else 
+     {
 
         trackTimer.tic();  
 
@@ -248,7 +248,6 @@ int main(int argc, char* argv[])
     n.getParam("lk_win_size", lk_win_size);
     n.getParam("harris_cell_size", harris_cell_size);
     n.getParam("array_capacity", array_capacity);
-
     n.getParam("ransac_thresh", ransac_thres);
     n.getParam("NUM_OF_CAM", NUM_OF_CAM);
 
@@ -256,9 +255,15 @@ int main(int argc, char* argv[])
     cout<<"NUM_OF_CAM      "<<NUM_OF_CAM<<endl;
 
 
-    string calib_file;
-    n.getParam("calib_file", calib_file);
-    cout<<"calib_file   "<<calib_file<<endl;
+    string calib_file[2];
+    //n.getParam("calib_file", calib_file);
+    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    {
+        n.getParam("calib_file" + to_string(i), calib_file[i]);
+
+    }
+
+    //cout<<"calib_file"<<calib_file<<endl;
 
 
     nvx::FeatureTracker::HarrisPyrLKParams params;
@@ -273,7 +278,7 @@ int main(int argc, char* argv[])
 
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
-        trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file);
+        trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file[i]);
         trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
         trackerData[i].ransac_thres = ransac_thres;
     }
