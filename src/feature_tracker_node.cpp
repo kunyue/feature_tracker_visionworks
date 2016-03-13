@@ -31,7 +31,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     for(int i = 0 ;i < NUM_OF_CAM ;i++)
     {
         cv::Mat img;
-        cout<<"image rows"<<image.rows<<endl;
+        cout<<"image rows"<<brideg_ptr->image.rows<<endl;
         cout<<"grab  rows  "<<ROW * i<<"   "<<ROW * (i + 1)<<endl;
         img = bridge_ptr->image.rowRange(ROW * i, ROW * (i + 1));
         trackerData[i].image = img.clone();
