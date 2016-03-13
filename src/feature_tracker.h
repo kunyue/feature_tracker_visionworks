@@ -38,7 +38,7 @@
 #define FREQ 3
 #define RANSAC true
 
-const int NUM_OF_CAM = 1;
+int NUM_OF_CAM ;
 const int ROW = 480;
 const int COL = 752;
 

@@ -249,8 +249,10 @@ int main(int argc, char* argv[])
     n.getParam("array_capacity", array_capacity);
 
     n.getParam("ransac_thresh", ransac_thres);
+    n.getParam("NUM_OF_CAM", NUM_OF_CAM);
 
     cout<<"ransac_thres    "<<ransac_thres<<endl;
+    cout<<"NUM_OF_CAM"<<NUM_OF_CAM<<endl;
 
 
     string calib_file;
