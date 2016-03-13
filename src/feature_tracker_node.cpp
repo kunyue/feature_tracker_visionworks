@@ -239,7 +239,7 @@ for(int i = 0;i < NUM_OF_CAM; i++)
 double total_ms = totalTimer.toc();
 ROS_INFO("Total Time %f",total_ms);
 cout<<endl<<endl;
-ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
+ROS_WARN_COND(total_ms > 40, "processing over 40 ms");
 }
 
 
