@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef _FEATURE_TRACKER_H
+#define	_FEATURE_TRACKER_H
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -84,3 +87,5 @@ class FeatureTracker
 		vector<bool> goodfeature;
 
 };
+
+#endif
