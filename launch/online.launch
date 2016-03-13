@@ -1,25 +1,26 @@
 <launch>
 
 
-    <node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
-        <!--remap from="~image_raw" to="/bluefox2/a"/--> 
-        <!--remap from="~image_raw" to="/videofile/image_raw"/--> 
-        <remap from="~image_raw" to="/mv_25001559/image_raw"/> 
+<node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
+<!--remap from="~image_raw" to="/bluefox2/a"/--> 
+<!--remap from="~image_raw" to="/videofile/image_raw"/--> 
+<remap from="~image_raw" to="/mv_25001559/image_raw"/> 
 
-        <param name="harris_k" type="double" value="0.04"/> 
-        <param name="harris_thresh" type="double" value="10"/> 
-        <param name="harris_cell_size" type="int" value="18"/> 
-        <param name="array_capacity" type="int" value="400"/> 
+<param name="harris_k" type="double" value="0.04"/> 
+<param name="harris_thresh" type="double" value="10"/> 
+<param name="harris_cell_size" type="int" value="18"/> 
+<param name="array_capacity" type="int" value="400"/> 
 
-        <param name="pyr_levels" type="int" value="3"/> 
-        <param name="lk_num_iters" type="int" value="30"/> 
-        <param name="lk_win_size" type="int" value="21"/> 
-        <param name="calib_file0" type="string" value="$(find visionworks)/config/05_camera_calib.yaml"/> 
-        
-        <param name="ransac_thresh" type="double" value="0.5"/> 
-        <param name="NUM_OF_CAM" type="int" value="1"/> 
-    </node>
+<param name="pyr_levels" type="int" value="3"/> 
+<param name="lk_num_iters" type="int" value="30"/> 
+<param name="lk_win_size" type="int" value="21"/> 
+<param name="calib_file0" type="string" value="$(find visionworks)/config/05_camera_calib.yaml"/> 
 
-    
+<param name="ransac_thresh" type="double" value="0.5"/> 
+<param name="NUM_OF_CAM" type="int" value="1"/> 
+<param name="SHOW_IMAGE" type="bool" value="true"/> 
+</node>
+
+
 
 </launch>

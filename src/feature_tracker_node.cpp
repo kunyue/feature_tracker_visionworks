@@ -2,7 +2,7 @@
 #include <backward.hpp>
 namespace backward
 {
-backward::SignalHandling sh;
+    backward::SignalHandling sh;
 } // namespace backward
 
 
@@ -19,6 +19,7 @@ nvx::Timer totalTimer;
 nvx::Timer trackTimer;
 nvxio::ContextGuard context;
 int NUM_OF_CAM; 
+bool SHOW_IMAGE;
 
 
 
@@ -31,8 +32,6 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     for(int i = 0 ;i < NUM_OF_CAM ;i++)
     {
         cv::Mat img;
-        cout<<"image rows"<<bridge_ptr->image.rows<<endl;
-        cout<<"grab  rows  "<<ROW * i<<"   "<<ROW * (i + 1)<<endl;
         img = bridge_ptr->image.colRange(COL * i, COL * (i + 1));
         trackerData[i].image = img.clone();
         vx_imagepatch_addressing_t src1_addr;
@@ -50,24 +49,24 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         if( !trackerData[i].isInit)
         {
-         trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
-         trackerData[i].isInit = true;
-         cout<<"isInit"<<endl;
+           trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
+           trackerData[i].isInit = true;
+           cout<<"isInit"<<endl;
 
-         trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
+           trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
             //printvector(prev_pts);
-         trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-         for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
-         {
+           trackerData[i].tracker->optIn( trackerData[i].prev_pts);
+           for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
+           {
 
-             trackerData[i].prev_ids.push_back( trackerData[i].id_count);
-             trackerData[i].prev_track_cnt.push_back(1);
-             trackerData[i].id_count++;
+               trackerData[i].prev_ids.push_back( trackerData[i].id_count);
+               trackerData[i].prev_track_cnt.push_back(1);
+               trackerData[i].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
-         }
-     }
-     else 
-     {
+           }
+       }
+       else 
+       {
 
         trackTimer.tic();  
 
@@ -75,7 +74,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         trackerData[i].tracker->track(trackerData[i].src1, trackerData[i].mask);
 
         double track_ms = trackTimer.toc();
-        std::cout << "track Time : " << track_ms << " ms" << std::endl  ;
+        ROS_INFO("Track Time %d",track_ms);
         if(trackerData[i].cnt !=0 )
         {
             ROS_INFO("Continue tracking");
@@ -174,55 +173,57 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
     feature.channels.push_back(id_of_point);
     pub_img.publish(feature);
 
-
-
-    ROS_INFO("Show image"); 
-
-    nvx::Timer showTimer;
-    showTimer.tic();    
-
-    std::vector<cv::Mat> tmp_img;
-    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    if(SHOW_IMAGE)
     {
-        cv::Mat color_img;
-        cv::cvtColor(trackerData[i].image, color_img, CV_GRAY2RGB);
-        tmp_img.push_back(color_img);
-        for(unsigned j = 0; j < trackerData[i].cur_pts.size(); j++)
+
+        ROS_INFO("Show image"); 
+
+        nvx::Timer showTimer;
+        showTimer.tic();    
+
+        std::vector<cv::Mat> tmp_img;
+        for(int i = 0 ;i < NUM_OF_CAM; i++)
         {
-            if(trackerData[i].goodfeature[j])
+            cv::Mat color_img;
+            cv::cvtColor(trackerData[i].image, color_img, CV_GRAY2RGB);
+            tmp_img.push_back(color_img);
+            for(unsigned j = 0; j < trackerData[i].cur_pts.size(); j++)
             {
-                double len = std::min(1.0, 1.0 * trackerData[i].cur_track_cnt[j] / 20);
-                cv::circle(tmp_img[i], trackerData[i].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
-            }
-            else
-            {
+                if(trackerData[i].goodfeature[j])
+                {
+                    double len = std::min(1.0, 1.0 * trackerData[i].cur_track_cnt[j] / 20);
+                    cv::circle(tmp_img[i], trackerData[i].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
+                }
+                else
+                {
                     //cv::circle(tmp_img, cur_pts[i], 2, cv::Scalar(255, 255, 255 ), 2);
+                }
             }
         }
-    }
 //combine NUM_OF_CAMERA PICTURE
-    cv::Size size(COL * NUM_OF_CAM, ROW); 
-    cv::Mat img_merge;  
+        cv::Size size(COL * NUM_OF_CAM, ROW); 
+        cv::Mat img_merge;  
 
 
-    img_merge.create(size, CV_8UC3);  
+        img_merge.create(size, CV_8UC3);  
 
-    for(int i = 0 ;i < NUM_OF_CAM; i++)
-    {
-        cv::Mat block_img = img_merge(cv::Rect(i * COL, 0, COL, ROW));
-        tmp_img[i].copyTo(block_img);
+        for(int i = 0 ;i < NUM_OF_CAM; i++)
+        {
+            cv::Mat block_img = img_merge(cv::Rect(i * COL, 0, COL, ROW));
+            tmp_img[i].copyTo(block_img);
+
+
+        }
+
+
+        cv::imshow("features",img_merge);
+        double show_ms = showTimer.toc();
+        ROS_INFO("Show Time %d",show_ms);
+
+        cv::waitKey(1);
 
 
     }
-
-
-    cv::imshow("features",img_merge);
-    double show_ms = showTimer.toc();
-    std::cout << "show Time : " << show_ms << " ms" << std::endl  ;
-
-
-    cv::waitKey(1);
-
 
 }
 
@@ -235,7 +236,7 @@ for(int i = 0;i < NUM_OF_CAM; i++)
 }
 
 double total_ms = totalTimer.toc();
-std::cout << "Total Time : " << total_ms << " ms" << std::endl ;
+ROS_INFO("Total Time %d",total_ms);
 cout<<endl<<endl;
 ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
 }
@@ -260,6 +261,8 @@ int main(int argc, char* argv[])
     n.getParam("array_capacity", array_capacity);
     n.getParam("ransac_thresh", ransac_thres);
     n.getParam("NUM_OF_CAM", NUM_OF_CAM);
+    n.getParam("SHOW_IMAGE", SHOW_IMAGE);
+
 
     cout<<"ransac_thres    "<<ransac_thres<<endl;
     cout<<"NUM_OF_CAM      "<<NUM_OF_CAM<<endl;
