@@ -12,7 +12,6 @@
 
 <node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
 <remap from="~image_raw" to="/image_filter/image"/> 
-
 <param name="harris_k" type="double" value="0.04"/> 
 <param name="harris_thresh" type="double" value="10"/> 
 <param name="harris_cell_size" type="int" value="18"/> 
