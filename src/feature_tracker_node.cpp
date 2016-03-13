@@ -6,7 +6,7 @@ using namespace camodocal;
 
 
 ros::Publisher pub_img;
-FeatureTracker trackerData[NUM_OF_CAM];
+FeatureTracker trackerData[2];
 nvx::Timer totalTimer;
 nvx::Timer trackTimer;
 nvxio::ContextGuard context;
@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
     n.getParam("NUM_OF_CAM", NUM_OF_CAM);
 
     cout<<"ransac_thres    "<<ransac_thres<<endl;
-    cout<<"NUM_OF_CAM"<<NUM_OF_CAM<<endl;
+    cout<<"NUM_OF_CAM      "<<NUM_OF_CAM<<endl;
 
 
     string calib_file;
