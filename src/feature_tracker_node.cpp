@@ -10,6 +10,7 @@ FeatureTracker trackerData[2];
 nvx::Timer totalTimer;
 nvx::Timer trackTimer;
 nvxio::ContextGuard context;
+int NUM_OF_CAM; 
 
 
 
