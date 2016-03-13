@@ -74,7 +74,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         trackerData[i].tracker->track(trackerData[i].src1, trackerData[i].mask);
 
         double track_ms = trackTimer.toc();
-        ROS_INFO("Track Time %d",track_ms);
+        ROS_INFO("Track Time %f",track_ms);
         if(trackerData[i].cnt !=0 )
         {
             ROS_INFO("Continue tracking");
@@ -218,7 +218,7 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
 
         cv::imshow("features",img_merge);
         double show_ms = showTimer.toc();
-        ROS_INFO("Show Time %d",show_ms);
+        ROS_INFO("Show Time %f",show_ms);
 
         cv::waitKey(1);
 
@@ -236,7 +236,7 @@ for(int i = 0;i < NUM_OF_CAM; i++)
 }
 
 double total_ms = totalTimer.toc();
-ROS_INFO("Total Time %d",total_ms);
+ROS_INFO("Total Time %f",total_ms);
 cout<<endl<<endl;
 ROS_WARN_COND(total_ms > 30, "processing over 30 ms");
 }
