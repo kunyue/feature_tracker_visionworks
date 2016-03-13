@@ -260,6 +260,7 @@ int main(int argc, char* argv[])
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
         n.getParam("calib_file" + to_string(i), calib_file[i]);
+        cout<<"came  "<<i <<"calib_file    "<<calib_file[i] <<endl;
 
     }
 
