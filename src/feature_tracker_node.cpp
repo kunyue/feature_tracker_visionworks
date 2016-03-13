@@ -219,7 +219,7 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
         cv::imshow("features",img_merge);
         double show_ms = showTimer.toc();
         ROS_INFO("Show Time %f",show_ms);
-        cout<<"debug show time "<<show_ms<<endl;
+        //cout<<"debug show time "<<show_ms<<endl;
 
         cv::waitKey(1);
 
