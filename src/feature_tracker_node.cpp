@@ -166,8 +166,8 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             if(p.x > 20 || p.y > 20)
             {
             //ROS_WARN("not good point");
-                continue;
                 trackerData[i].goodfeature.push_back(false);
+                continue;
 
             }
             trackerData[i].goodfeature.push_back(true);
