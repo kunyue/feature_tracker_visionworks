@@ -20,6 +20,7 @@ nvx::Timer trackTimer;
 nvxio::ContextGuard context;
 int NUM_OF_CAM; 
 bool SHOW_IMAGE;
+bool PUB_UV;
 
 
 
@@ -49,24 +50,24 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
         if( !trackerData[i].isInit)
         {
-           trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
-           trackerData[i].isInit = true;
-           cout<<"isInit"<<endl;
+         trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
+         trackerData[i].isInit = true;
+         cout<<"isInit"<<endl;
 
-           trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
+         trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
             //printvector(prev_pts);
-           trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-           for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
-           {
+         trackerData[i].tracker->optIn( trackerData[i].prev_pts);
+         for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
+         {
 
-               trackerData[i].prev_ids.push_back( trackerData[i].id_count);
-               trackerData[i].prev_track_cnt.push_back(1);
-               trackerData[i].id_count++;
+             trackerData[i].prev_ids.push_back( trackerData[i].id_count);
+             trackerData[i].prev_track_cnt.push_back(1);
+             trackerData[i].id_count++;
             //cout<<"forw_pts_i  "<<i<<" x "<<prev_pts[i].x<<" y "<<prev_pts[i].y<<endl;
-           }
-       }
-       else 
-       {
+         }
+     }
+     else 
+     {
 
         trackTimer.tic();  
 
@@ -148,6 +149,11 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             p.x = un_pts[j].x;
             p.y = un_pts[j].y;
             p.z = 1;
+            geometry_msgs::Point32 uv;
+            uv.x = trackerData[i].cur_pts[j].x;
+            uv.y = trackerData[i].cur_pts[j].y;
+            uv.z = 1;
+
 
             if(p.x!=p.x || p.y!=p.y)
             {
@@ -165,8 +171,10 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
 
             }
             trackerData[i].goodfeature.push_back(true);
-
-            feature.points.push_back(p);
+            if(PUB_UV)
+                feature.points.push_back(uv);
+            else
+                feature.points.push_back(p);
             id_of_point.values.push_back(p_id* NUM_OF_CAM + i);
         }
     }
@@ -263,10 +271,12 @@ int main(int argc, char* argv[])
     n.getParam("ransac_thresh", ransac_thres);
     n.getParam("NUM_OF_CAM", NUM_OF_CAM);
     n.getParam("SHOW_IMAGE", SHOW_IMAGE);
+    n.getParam("PUB_UV", PUB_UV);
 
 
     cout<<"ransac_thres    "<<ransac_thres<<endl;
     cout<<"NUM_OF_CAM      "<<NUM_OF_CAM<<endl;
+    cout<<"pub uv   "<<PUB_UV<<endl;
 
 
     string calib_file[2];
