@@ -25,7 +25,11 @@
 
 <param name="ransac_thresh" type="double" value="0.5"/> 
 <param name="NUM_OF_CAM" type="int" value="2"/> 
+<<<<<<< HEAD
 <param name="SHOW_IMAGE" type="bool" value="true"/> 
+=======
+<param name="SHOW_IMAGE" type="bool" value="false"/> 
+>>>>>>> origin
 <param name="PUB_UV" type="bool" value="false"/> 
 </node>
 
