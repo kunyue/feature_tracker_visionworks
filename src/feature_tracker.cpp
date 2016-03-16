@@ -172,9 +172,20 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
     vector<cv::Point2f> un_pts;
     for (unsigned int i = 0; i < v.size(); i++)
     {
-        Eigen::Vector2d a(v[i].x, v[i].y);
-        Eigen::Vector3d b,c;
+        Eigen::Vector2d a(v[i].x, v[i].y),re_pro;
+        Eigen::Vector3d b;
         m_camera->liftProjective(a, b);
+        
+
+        Eigen::Matrix<double,2,3> J;
+
+        m_camera->spaceToPlane(b, re_pro , J);
+
+        cout<<"a   "<< a.transpose()<<endl;
+        cout<<"b   "<<b.transpose()<<endl;
+        cout<<"re_pro"<<re_pro.transpose()<<endl;
+        cout<<"J "<<endl<<J<<endl<<endl;
+
         //m_camera->liftSphere(a, c);
         un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
         if(b.z()!=b.z())
