@@ -137,7 +137,7 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
     sensor_msgs::PointCloud feature;
     sensor_msgs::ChannelFloat32 id_of_point;
     feature.header = img_msg->header;
-    for(int i = 0 ;i < NUM_OF_CAM;i++)
+    for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
         auto un_pts = trackerData[i].undistortedPoints(trackerData[i].cur_pts);
         auto &ids = trackerData[i].cur_ids;
@@ -168,14 +168,13 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             //ROS_WARN("not good point");
                 trackerData[i].goodfeature.push_back(false);
                 continue;
-
             }
             trackerData[i].goodfeature.push_back(true);
             if(PUB_UV)
                 feature.points.push_back(uv);
             else
                 feature.points.push_back(p);
-            id_of_point.values.push_back(p_id* NUM_OF_CAM + i);
+            id_of_point.values.push_back(p_id * NUM_OF_CAM + i);
         }
     }
     feature.channels.push_back(id_of_point);
