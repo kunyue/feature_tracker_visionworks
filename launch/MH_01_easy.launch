@@ -22,8 +22,8 @@
 
 <param name="ransac_thresh" type="double" value="0.5"/> 
 <param name="NUM_OF_CAM" type="int" value="1"/> 
-<param name="SHOW_IMAGE" type="bool" value="true"/> 
-<param name="PUB_UV" type="bool" value="true"/> 
+<param name="SHOW_IMAGE" type="bool" value="false"/> 
+<param name="PUB_UV" type="bool" value="false"/> 
 </node>
 
 
