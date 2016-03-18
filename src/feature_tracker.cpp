@@ -173,7 +173,7 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
     for (unsigned int i = 0; i < v.size(); i++)
     {
         Eigen::Vector2d a(v[i].x, v[i].y),re_pro;
-        Eigen::Vector3d b;
+        Eigen::Vector3d b;    
         m_camera->liftProjective(a, b);
 
         //Eigen::Vector2d re_pro;
