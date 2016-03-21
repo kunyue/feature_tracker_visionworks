@@ -37,7 +37,7 @@
 #include "camodocal/camera_models/ScaramuzzaCamera.h"
 
 #define MIN_DIST 30
-#define MAX_CNT 100
+#define MAX_CNT 200
 #define FREQ 3
 #define RANSAC true
 
