@@ -36,8 +36,8 @@
 #include "camodocal/camera_models/PinholeCamera.h"
 #include "camodocal/camera_models/ScaramuzzaCamera.h"
 
-#define MIN_DIST 30
-#define MAX_CNT 200
+#define MIN_DIST 35
+#define MAX_CNT 150
 #define FREQ 3
 #define RANSAC true
 
