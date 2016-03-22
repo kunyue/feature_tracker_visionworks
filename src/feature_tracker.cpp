@@ -177,6 +177,7 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         m_camera->liftProjective(a, b);
 
         //test J
+        
 /*
         Eigen::Vector2d uv_b,uv_bd;
         Eigen::Vector3d d;
