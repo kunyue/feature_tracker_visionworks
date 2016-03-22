@@ -154,13 +154,6 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             uv.y = trackerData[i].cur_pts[j].y;
             uv.z = 1;
 
-            if((uv.x - 376) * (uv.x - 376) + (uv.y - 240) * (uv.y - 240) > 340 * 340)
-            {
-                trackerData[i].goodfeature.push_back(false);
-                continue;
-            }
-
-
             if(p.x!=p.x || p.y!=p.y)
             {
                 ROS_WARN("Nan problem!");
