@@ -185,7 +185,7 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         for( int i = 0 ;i <= 2 ;i++)
         {
             d<<0,0,0;
-            d(i) = 0.1;
+            d(i) = 0.01;
             m_camera->spaceToPlane(b+d,uv_bd);
 
             ROS_INFO_STREAM("dx        "<<d.transpose());           
