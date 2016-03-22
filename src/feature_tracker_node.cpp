@@ -296,25 +296,36 @@ int main(int argc, char* argv[])
     params.harris_cell_size = harris_cell_size;
     params.array_capacity = array_capacity;
 
+
+    // load mask
+    cv::Mat mask_image;
+    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/mask.jpg", 0);
+
+    vx_image mask;
+    vx_imagepatch_addressing_t src1_addr;
+    src1_addr.dim_x = mask_image.cols;
+    src1_addr.dim_y = mask_image.rows;
+    src1_addr.stride_x = sizeof(vx_uint8);
+    src1_addr.stride_y = mask_image.step;
+    void *src1_ptrs[] = {
+        mask_image.data
+    };
+
+    mask = vxCreateImageFromHandle(context, VX_DF_IMAGE_U8, &src1_addr, src1_ptrs, VX_IMPORT_TYPE_HOST);
+    NVXIO_CHECK_REFERENCE(mask);
+
+
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
         trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file[i]);
         trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
         trackerData[i].ransac_thres = ransac_thres;
+        trackerData[i].mask = mask;
     }
 
     ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
 
     pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
-
-    cv::Mat mask_image;
-    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/mask.jpg", 0);
-    cv::imshow("mask",mask_image);
-    cv::waitKey(1);
-
-
-
-
 
 
 
