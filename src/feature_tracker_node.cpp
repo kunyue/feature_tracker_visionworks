@@ -308,7 +308,7 @@ int main(int argc, char* argv[])
     pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
 
     cv::Mat mask_image;
-    mask_image = cv::imread( "/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config", 0 );
+    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/mask.jpg", 0);
     cv::imshow("mask",mask_image);
     cv::waitKey(1);
 
