@@ -176,6 +176,8 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         Eigen::Vector3d b;    
         m_camera->liftProjective(a, b);
 
+        //test J
+/*
         Eigen::Vector2d uv_b,uv_bd;
         Eigen::Vector3d d;
         Eigen::Matrix<double,2,3> J,JD;
@@ -197,6 +199,8 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
             ROS_INFO_STREAM("J        "<<J);
             ROS_INFO_STREAM("JD       "<<JD);
             ROS_INFO_STREAM("       ");
+
+*/
         /*
         ROS_INFO("a b re_pro J");
 
