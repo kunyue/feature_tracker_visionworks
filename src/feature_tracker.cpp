@@ -185,14 +185,14 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         for( int i = 0 ;i <= 2 ;i++)
         {
             d<<0,0,0;
-            d(i) = 0.0001;
+            d(i) = 0.00001;
             m_camera->spaceToPlane(b+d,uv_bd);
 
             ROS_INFO_STREAM("dx        "<<d.transpose());           
             ROS_INFO_STREAM("f(x+dx)   "<<uv_bd.transpose());
             ROS_INFO_STREAM("df(x)     "<<(uv_bd - uv_b).transpose());
-            JD(0,i) = (uv_bd - uv_b)(0)/0.001;
-            JD(1,i) = (uv_bd - uv_b)(1)/0.001;
+            JD(0,i) = (uv_bd - uv_b)(0)/0.00001;
+            JD(1,i) = (uv_bd - uv_b)(1)/0.00001;
          }
             ROS_INFO_STREAM("J        "<<J);
             ROS_INFO_STREAM("JD       "<<JD);
