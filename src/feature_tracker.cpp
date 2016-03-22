@@ -181,18 +181,20 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         Eigen::Matrix<double,2,3> J;
 
         m_camera->spaceToPlane(b, uv_b , J);
+            ROS_INFO_STREAM("x       "<<b.transpose());
         for( int i = 0 ;i <= 2 ;i++)
         {
             d<<0,0,0;
             d(i) = 0.1;
             m_camera->spaceToPlane(b+d,uv_bd);
 
-            ROS_INFO_STREAM("dx"<<d.transpose());           
-            ROS_INFO_STREAM("f(x+dx)"<<uv_bd.transpose());
-            ROS_INFO_STREAM("f(x)+H*dx"<<(uv_b + J * d).transpose());
+            ROS_INFO_STREAM("dx        "<<d.transpose());           
+            ROS_INFO_STREAM("f(x+dx)   "<<uv_bd.transpose());
+            ROS_INFO_STREAM("f(x)+H*dx "<<(uv_b + J * d).transpose());
+
             
         }
-
+            ROS_INFO_STREAM("    ");
         /*
         ROS_INFO("a b re_pro J");
 
