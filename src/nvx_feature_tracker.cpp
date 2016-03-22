@@ -224,6 +224,7 @@ namespace
         NVXIO_SAFE_CALL( vxSetParameterByIndex(pyr_node_, 0, (vx_reference)newFrame) );
         //NVXIO_SAFE_CALL( vxSetParameterByIndex(feature_track_node_, 2, (vx_reference)mask) );
         NVXIO_SAFE_CALL( vxSetParameterByIndex(feature_track_node_, 0, (vx_reference)newFrame) );
+        NVXIO_SAFE_CALL( vxSetParameterByIndex(feature_track_node_, 2, (vx_reference)mask) );
 
         //**************************************************************************************
         // Age the delay objects (pyramid, points to track) before graph execution
