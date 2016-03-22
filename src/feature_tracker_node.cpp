@@ -154,6 +154,11 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             uv.y = trackerData[i].cur_pts[j].y;
             uv.z = 1;
 
+            if(uv.y < 10 || uv.y > 470)
+            {
+                trackerData[i].goodfeature.push_back(false);
+                continue;
+            }
             if(p.x!=p.x || p.y!=p.y)
             {
                 ROS_WARN("Nan problem!");
