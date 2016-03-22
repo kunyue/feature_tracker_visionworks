@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
         trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file[i]);
         trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
         trackerData[i].ransac_thres = ransac_thres;
-        trackerData[i].mask = mask;
+        //trackerData[i].mask = mask;
     }
 
     ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
