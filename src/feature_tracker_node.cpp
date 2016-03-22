@@ -154,7 +154,7 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             uv.y = trackerData[i].cur_pts[j].y;
             uv.z = 1;
 
-            if(uv.y < 10 || uv.y > 470)
+            if(uv.y < 10 || uv.y > ROW - 10)
             {
                 trackerData[i].goodfeature.push_back(false);
                 continue;
