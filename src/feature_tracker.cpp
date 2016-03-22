@@ -190,8 +190,7 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
 
             ROS_INFO_STREAM("dx        "<<d.transpose());           
             ROS_INFO_STREAM("f(x+dx)   "<<uv_bd.transpose());
-            ROS_INFO_STREAM("f(x)+H*dx "<<(uv_b + J * d).transpose());
-
+            ROS_INFO_STREAM("df(x)     "<<(uv_bd - uv_b).transpose());
             
         }
             ROS_INFO_STREAM("    ");
