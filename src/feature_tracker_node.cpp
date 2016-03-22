@@ -159,13 +159,11 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
             {
                 ROS_WARN("Nan problem!");
                 trackerData[i].goodfeature.push_back(false);
-            //ROS_BREAK();
                 continue;
             }
 
             if(p.x > 20 || p.y > 20)
             {
-            //ROS_WARN("not good point");
                 trackerData[i].goodfeature.push_back(false);
                 continue;
             }
@@ -218,8 +216,6 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
         {
             cv::Mat block_img = img_merge(cv::Rect(i * COL, 0, COL, ROW));
             tmp_img[i].copyTo(block_img);
-
-
         }
 
 
@@ -231,22 +227,22 @@ if(trackerData[0].isInit && trackerData[0].cnt==0)
         cv::waitKey(1);
 
 
+        }
+
     }
 
-}
 
+    //release
+    for(int i = 0;i < NUM_OF_CAM; i++)
+    {
+        trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
+        vxReleaseImage(&trackerData[i].src1);
+    }
 
-//release
-for(int i = 0;i < NUM_OF_CAM; i++)
-{
-    trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
-    vxReleaseImage(&trackerData[i].src1);
-}
-
-double total_ms = totalTimer.toc();
-ROS_INFO("Total Time %f",total_ms);
-cout<<endl<<endl;
-ROS_WARN_COND(total_ms > 40, "processing over 40 ms");
+    double total_ms = totalTimer.toc();
+    ROS_INFO("Total Time %f",total_ms);
+    cout<<endl<<endl;
+    ROS_WARN_COND(total_ms > 40, "processing over 40 ms");
 }
 
 
@@ -310,6 +306,17 @@ int main(int argc, char* argv[])
     ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
 
     pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
+
+    cv::Mat mask_image;
+    mask_image = cv::imread( "../config/mask.jpg", 0 );
+    cv::imshow("mask",mask_image);
+    cv::waitKey(1);
+
+
+
+
+
+
 
     ros::spin();
 

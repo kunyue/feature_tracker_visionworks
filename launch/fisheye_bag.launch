@@ -18,7 +18,7 @@
 <param name="lk_win_size" type="int" value="21"/> 
 <param name="calib_file0" type="string" value="$(find visionworks)/config/05_camera_calib.yaml"/> 
 
-<param name="ransac_thresh" type="double" value="3"/> 
+<param name="ransac_thresh" type="double" value="0.5"/> 
 <param name="NUM_OF_CAM" type="int" value="1"/> 
 <param name="SHOW_IMAGE" type="bool" value="true"/> 
 <param name="PUB_UV" type="bool" value="false"/> 
