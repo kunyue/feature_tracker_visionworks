@@ -11,7 +11,7 @@
 <param name="harris_k" type="double" value="0.04"/> 
 <param name="harris_thresh" type="double" value="10"/> 
 <param name="harris_cell_size" type="int" value="18"/> 
-<param name="array_capacity" type="int" value="300"/> 
+<param name="array_capacity" type="int" value="100"/> 
 
 <param name="pyr_levels" type="int" value="3"/> 
 <param name="lk_num_iters" type="int" value="30"/> 
