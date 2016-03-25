@@ -4,8 +4,8 @@
 
 
 <node pkg="image_filter" type="image_filter_node" name="image_filter" output="screen">
-<remap from="~image1" to="/stereo/right/image_raw""/> 
-<remap from="~image2" to="/stereo/left/image_raw""/> 
+<remap from="~image1" to="/stereo/right/image_raw"/> 
+<remap from="~image2" to="/stereo/left/image_raw"/> 
 
 </node>
 
