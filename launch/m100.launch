@@ -5,8 +5,8 @@
 
 
 <node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
-<!--remap from="~image_raw" to="/stereo/left/image_raw"/--> 
-<remap from="~image_raw" to="/image_filter/image"/> 
+<remap from="~image_raw" to="/stereo/left/image_raw"/> 
+<!--remap from="~image_raw" to="/image_filter/image"/--> 
 
 <param name="harris_k" type="double" value="0.04"/> 
 <param name="harris_thresh" type="double" value="10"/> 
@@ -20,7 +20,7 @@
 <param name="calib_file1" type="string" value="$(find visionworks)/config/up.yaml"/> 
 
 <param name="ransac_thresh" type="double" value="0.5"/> 
-<param name="NUM_OF_CAM" type="int" value="2"/> 
+<param name="NUM_OF_CAM" type="int" value="1"/> 
 <param name="SHOW_IMAGE" type="bool" value="true"/> 
 <param name="PUB_UV" type="bool" value="false"/> 
 </node>
