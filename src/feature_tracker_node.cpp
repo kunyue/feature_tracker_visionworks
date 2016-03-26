@@ -329,11 +329,11 @@ int main(int argc, char* argv[])
         trackerData[i].mask = mask;
     }
 
-    ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
+    ros::Subscriber sub_img = n.subscribe("image_raw", 10, img_callback);
 
     pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
 
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(50);
 
     while (ros::ok())
       {
