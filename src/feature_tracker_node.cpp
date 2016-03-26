@@ -21,7 +21,6 @@ nvxio::ContextGuard context;
 int NUM_OF_CAM; 
 bool SHOW_IMAGE;
 bool PUB_UV;
-sensor_msgs::PointCloud pub_feature;
 
 
 
@@ -181,8 +180,7 @@ if(trackerData[0].isInit && trackerData[0].cnt == 0)
         }
     }
     feature.channels.push_back(id_of_point);
-    //pub_img.publish(feature);
-    pub_feature = feature;
+    pub_img.publish(feature);
 
     if(SHOW_IMAGE)
     {
@@ -329,24 +327,15 @@ int main(int argc, char* argv[])
         trackerData[i].mask = mask;
     }
 
-    ros::Subscriber sub_img = n.subscribe("image_raw", 10, img_callback);
+    ros::Subscriber sub_img = n.subscribe("image_raw", 100, img_callback);
 
     pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
 
-    ros::Rate loop_rate(50);
 
-    while (ros::ok())
-      {
 
-        pub_img.publish(pub_feature);
+    ros::spin();
 
-        ros::spinOnce();
 
-        loop_rate.sleep();
-
-      }
-
-  return 0;
 }
 
 
