@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
     while (ros::ok())
       {
 
-        pub_img.publish(feature);
+        pub_img.publish(pub_feature);
 
         ros::spinOnce();
 
