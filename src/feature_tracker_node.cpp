@@ -130,7 +130,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 }
 
     //show and pub
-if(trackerData[0].isInit && trackerData[0].cnt==0)
+if(trackerData[0].isInit && trackerData[0].cnt == 0)
 {
 
     ROS_INFO("pub_image");
