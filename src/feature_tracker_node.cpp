@@ -136,6 +136,8 @@ if(trackerData[0].isInit && trackerData[0].cnt == 0)
     ROS_INFO("pub_image");
     sensor_msgs::PointCloud feature;
     sensor_msgs::ChannelFloat32 id_of_point;
+    feature.clear();
+    id_of_point.clear();
     feature.header = img_msg->header;
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
