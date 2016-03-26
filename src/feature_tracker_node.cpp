@@ -21,6 +21,7 @@ nvxio::ContextGuard context;
 int NUM_OF_CAM; 
 bool SHOW_IMAGE;
 bool PUB_UV;
+sensor_msgs::PointCloud pub_feature;
 
 
 
@@ -136,8 +137,6 @@ if(trackerData[0].isInit && trackerData[0].cnt == 0)
     ROS_INFO("pub_image");
     sensor_msgs::PointCloud feature;
     sensor_msgs::ChannelFloat32 id_of_point;
-    feature = NULL;
-    id_of_point = NULL;
     feature.header = img_msg->header;
     for(int i = 0 ;i < NUM_OF_CAM; i++)
     {
@@ -182,7 +181,8 @@ if(trackerData[0].isInit && trackerData[0].cnt == 0)
         }
     }
     feature.channels.push_back(id_of_point);
-    pub_img.publish(feature);
+    //pub_img.publish(feature);
+    pub_feature = feature;
 
     if(SHOW_IMAGE)
     {
@@ -333,11 +333,20 @@ int main(int argc, char* argv[])
 
     pub_img = n.advertise<sensor_msgs::PointCloud>("image",1000);
 
+    ros::Rate loop_rate(10);
 
+    while (ros::ok())
+      {
 
-    ros::spin();
+        pub_img.publish(feature);
 
+        ros::spinOnce();
 
+        loop_rate.sleep();
+
+      }
+
+  return 0;
 }
 
 
