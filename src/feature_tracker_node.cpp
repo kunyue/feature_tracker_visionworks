@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 
     // load mask
     cv::Mat mask_image;
-    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/mask_big.jpg", 0);
+    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/mask.jpg", 0);
 
     vx_image mask;
     vx_imagepatch_addressing_t src1_addr;
