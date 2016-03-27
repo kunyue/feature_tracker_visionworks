@@ -4,6 +4,7 @@
 
 
 
+
 <node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
 <!--remap from="~image_raw" to="/stereo/right/image_raw"/--> 
 <remap from="~image_raw" to="/image_filter/image"/> 
