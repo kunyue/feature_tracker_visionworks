@@ -13,9 +13,9 @@
 <!--remap from="~image_raw" to="/image_filter/image"/--> 
 
 <param name="harris_k" type="double" value="0.04"/> 
-<param name="harris_thresh" type="double" value="20"/> 
+<param name="harris_thresh" type="double" value="15"/> 
 <param name="harris_cell_size" type="int" value="18"/> 
-<param name="array_capacity" type="int" value="200"/> 
+<param name="array_capacity" type="int" value="400"/> 
 
 <param name="pyr_levels" type="int" value="3"/> 
 <param name="lk_num_iters" type="int" value="30"/> 
