@@ -3,8 +3,8 @@
 <node name="rosbag" pkg="rosbag" type="play" respawn="false" args="--delay=1 --queue=1000 /media/ubuntu/Tony-hd/bag/stereo/stereo01.bag" />
 
 <node pkg="image_filter" type="image_filter_node" name="image_filter" output="screen">
-    <remap from="~image1" to="/stereo/right/image_raw"/> 
-    <remap from="~image2" to="/stereo/left/image_raw"/> 
+    <remap from="~image1" to="/stereo/left/image_raw"/> 
+    <remap from="~image2" to="/stereo/right/image_raw"/> 
 </node>
 
 
