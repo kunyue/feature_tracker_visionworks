@@ -9,7 +9,7 @@
 <remap from="~image_raw" to="/mv_25001559/image_raw"/> 
 
 <param name="harris_k" type="double" value="0.04"/> 
-<param name="harris_thresh" type="double" value="15"/> 
+<param name="harris_thresh" type="double" value="10"/> 
 <param name="harris_cell_size" type="int" value="18"/> 
 <param name="array_capacity" type="int" value="300"/> 
 
