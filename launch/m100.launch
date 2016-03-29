@@ -1,16 +1,16 @@
 <launch>
 
 <node name="rosbag" pkg="rosbag" type="play" respawn="false" args="--delay=1 --queue=1000 /media/ubuntu/Tony-hd/bag/stereo/stereo02_cut.bag" />
-<!--
+
 <node pkg="image_filter" type="image_filter_node" name="image_filter" output="screen">
     <remap from="~image1" to="/stereo/left/image_raw"/> 
     <remap from="~image2" to="/stereo/right/image_raw"/> 
 </node>
--->
+
 
 <node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
-<remap from="~image_raw" to="/stereo/right/image_raw"/> 
-<!--remap from="~image_raw" to="/image_filter/image"/--> 
+<!--remap from="~image_raw" to="/stereo/right/image_raw"/--> 
+<remap from="~image_raw" to="/image_filter/image"/> 
 
 <param name="harris_k" type="double" value="0.04"/> 
 <param name="harris_thresh" type="double" value="15"/> 
@@ -20,11 +20,11 @@
 <param name="pyr_levels" type="int" value="3"/> 
 <param name="lk_num_iters" type="int" value="30"/> 
 <param name="lk_win_size" type="int" value="21"/> 
-<param name="calib_file1" type="string" value="$(find visionworks)/config/down.yaml"/> 
-<param name="calib_file0" type="string" value="$(find visionworks)/config/up.yaml"/> 
+<param name="calib_file0" type="string" value="$(find visionworks)/config/down.yaml"/> 
+<param name="calib_file1" type="string" value="$(find visionworks)/config/up.yaml"/> 
 
 <param name="ransac_thresh" type="double" value="0.5"/> 
-<param name="NUM_OF_CAM" type="int" value="1"/> 
+<param name="NUM_OF_CAM" type="int" value="2"/> 
 <param name="SHOW_IMAGE" type="bool" value="true"/> 
 <param name="PUB_UV" type="bool" value="false"/> 
 </node>
