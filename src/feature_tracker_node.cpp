@@ -176,7 +176,8 @@ if(trackerData[0].isInit && trackerData[0].cnt == 0)
                 feature.points.push_back(uv);
             else
                 feature.points.push_back(p);
-            id_of_point.values.push_back((p_id + MAX_CNT * i) * NUM_OF_CAM + i);
+            if(i == 1)
+                id_of_point.values.push_back((p_id + MAX_CNT * i) * NUM_OF_CAM + i);
         }
     }
     feature.channels.push_back(id_of_point);
