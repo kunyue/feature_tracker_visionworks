@@ -274,8 +274,7 @@ void FeatureTracker::ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point
         if((int)status[i] == 1)
         {
             if(curr[i].y < 10 || curr[i].y > ROW - 10 || curr[i].x < 10 || curr[i].x > COL - 10 || 
-                (curr[i].x - COL / 2.0) * (curr[i].x - COL / 2.0) + (curr[i].y - ROW / 2.0) * (curr[i].y - ROW / 2.0) > 345 * 345 ||
-                (curr[i].x - COL / 2.0) * (curr[i].x - COL / 2.0) + (curr[i].y - ROW / 2.0) * (curr[i].y - ROW / 2.0) < 20 * 20)
+                (curr[i].x - COL / 2.0) * (curr[i].x - COL / 2.0) + (curr[i].y - ROW / 2.0) * (curr[i].y - ROW / 2.0) > 345 * 345 )
                 continue;
             cur_pts.push_back(curr[i]);
             cur_ids.push_back(ransac_ids[i]);
