@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 
     // load mask
     cv::Mat mask_image;
-    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/mask.jpg", 0);
+    mask_image = cv::imread("/home/ubuntu/catkin_ws/src/feature_tracker_visionworks/config/60.jpg", 0);
 
     vx_image mask;
     vx_imagepatch_addressing_t src1_addr;
@@ -324,8 +324,8 @@ int main(int argc, char* argv[])
         trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file[i]);
         trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
         trackerData[i].ransac_thres = ransac_thres;
-        //trackerData[i].mask = mask;
-        trackerData[i].mask = NULL;
+        trackerData[i].mask = mask;
+        //trackerData[i].mask = NULL;
     }
 
     ros::Subscriber sub_img = n.subscribe("image_raw", 10, img_callback);
