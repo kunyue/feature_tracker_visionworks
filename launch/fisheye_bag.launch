@@ -1,6 +1,6 @@
 <launch>
 
-<node name="rosbag" pkg="rosbag" type="play" respawn="false" args="--delay=1 --queue=1000 /media/ubuntu/Tony-hd/bag/vins3.bag" />
+<node name="rosbag" pkg="rosbag" type="play" respawn="false" args="--delay=1 --queue=1000 /media/ubuntu/Tony-hd/bag/vins1.bag" />
 
 
 <node pkg="visionworks" type="feature_tracker" name="feature_tracker" output="screen">
