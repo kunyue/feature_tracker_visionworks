@@ -33,8 +33,8 @@
 #include "camodocal/camera_models/CameraFactory.h"
 #include "camodocal/camera_models/CataCamera.h"
 
-#define MIN_DIST 35
-#define MAX_CNT 50
+#define MIN_DIST 30
+#define MAX_CNT 150
 #define FREQ 3
 #define RANSAC true
 

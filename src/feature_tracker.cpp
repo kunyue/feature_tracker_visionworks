@@ -258,9 +258,9 @@ void FeatureTracker::ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point
         // ransac after undistort
     std::vector<cv::Point2f> prev_un = undistortedPoints(prev);
     std::vector<cv::Point2f> curr_un = undistortedPoints(curr);
-
+    static double rans_t = 1.0 / 420.0; //--> on feature
     //cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, ransac_thres, 0.99, status);
-    cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, ransac_thres, 0.99, status);
+    cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, rans_t, 0.99, status);
     int num = curr.size();
     cur_pts.clear();
     cur_ids.clear();
