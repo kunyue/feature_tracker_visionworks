@@ -43,7 +43,7 @@
 #include "NVXIO/Application.hpp"
 using namespace std;
 
-namespace 
+namespace
 {
     //
     // FeatureTracker based on Harris feature + PyrLK optical flow
@@ -51,61 +51,61 @@ namespace
 
     class FeatureTrackerHarrisPyrLK : public nvx::FeatureTracker
     {
-    public:
-        FeatureTrackerHarrisPyrLK(vx_context context, const HarrisPyrLKParams& params);
-        ~FeatureTrackerHarrisPyrLK();
+        public:
+            FeatureTrackerHarrisPyrLK(vx_context context, const HarrisPyrLKParams& params);
+            ~FeatureTrackerHarrisPyrLK();
 
-        void init(vx_image firstFrame, vx_image mask);
-        void track(vx_image newFrame, vx_image mask);
+            void init(vx_image firstFrame, vx_image mask);
+            void track(vx_image newFrame, vx_image mask);
 
-        vx_array getPrevFeatures() const;
-        vx_array getCurrFeatures() const;
-        vx_array getOpticalFeatures() const;
-        vx_array getHarrisFeatures() const;
-        vx_array getOptIn() const;
-        void optIn(std::vector<cv::Point2f> &v) ;
+            vx_array getPrevFeatures() const;
+            vx_array getCurrFeatures() const;
+            vx_array getOpticalFeatures() const;
+            vx_array getHarrisFeatures() const;
+            vx_array getOptIn() const;
+            void optIn(std::vector<cv::Point2f> &v) ;
 
-        void printPerfs() const;
+            void printPerfs() const;
 
-    private:
-        void createDataObjects();
+        private:
+            void createDataObjects();
 
-        void processFirstFrame(vx_image frame, vx_image mask);
-        void createMainGraph(vx_image frame, vx_image mask);
+            void processFirstFrame(vx_image frame, vx_image mask);
+            void createMainGraph(vx_image frame, vx_image mask);
 
-        void release();
+            void release();
 
-        HarrisPyrLKParams params_;
+            HarrisPyrLKParams params_;
 
-        vx_context context_;
+            vx_context context_;
 
-        // Format for current frames
-        vx_df_image format_;
-        vx_uint32 width_;
-        vx_uint32 height_;
+            // Format for current frames
+            vx_df_image format_;
+            vx_uint32 width_;
+            vx_uint32 height_;
 
-        // Pyramids for two successive frames
-        vx_delay pyr_delay_;
+            // Pyramids for two successive frames
+            vx_delay pyr_delay_;
 
-        // Points to track for two successive frames
-        vx_delay pts_delay_;
+            // Points to track for two successive frames
+            vx_delay pts_delay_;
 
-        // Tracked points
-        vx_array kp_curr_list_;
-        vx_array temp;
+            // Tracked points
+            vx_array kp_curr_list_;
+            vx_array temp;
 
-        vx_array opt_in;
-        vx_array opt_feature;
-        vx_array harris_feature;
+            vx_array opt_in;
+            vx_array opt_feature;
+            vx_array harris_feature;
 
-        // Main graph
-        vx_graph main_graph_;
+            // Main graph
+            vx_graph main_graph_;
 
-        // Node from main graph (used to print performance results)
-        vx_node cvt_color_node_;
-        vx_node pyr_node_;
-        vx_node opt_flow_node_;
-        vx_node feature_track_node_;
+            // Node from main graph (used to print performance results)
+            vx_node cvt_color_node_;
+            vx_node pyr_node_;
+            vx_node opt_flow_node_;
+            vx_node feature_track_node_;
     };
 
     FeatureTrackerHarrisPyrLK::FeatureTrackerHarrisPyrLK(vx_context context, const HarrisPyrLKParams& params) :
@@ -167,7 +167,7 @@ namespace
         }
 
         // Re-create graph if the input size was changed
-        
+
 
         if (width != width_ || height != height_)
         {
@@ -176,7 +176,7 @@ namespace
             format_ = format;
             width_ = width;
             height_ = height;
-           
+
             createDataObjects();
 
             createMainGraph(firstFrame, mask);
@@ -264,7 +264,7 @@ namespace
     }
 
 
-    void FeatureTrackerHarrisPyrLK::optIn(std::vector<cv::Point2f> &v) 
+    void FeatureTrackerHarrisPyrLK::optIn(std::vector<cv::Point2f> &v)
     {
         if(v.size()==0)
         {
@@ -369,9 +369,9 @@ namespace
         temp = vxCreateArray(context_, NVX_TYPE_POINT2F, params_.array_capacity);
         NVXIO_CHECK_REFERENCE(temp);
         opt_in = vxCreateArray(context_, NVX_TYPE_POINT2F, params_.array_capacity);
-        NVXIO_CHECK_REFERENCE(opt_in);       
+        NVXIO_CHECK_REFERENCE(opt_in);
         opt_feature = vxCreateArray(context_, NVX_TYPE_POINT2F, params_.array_capacity);
-        NVXIO_CHECK_REFERENCE(opt_feature);        
+        NVXIO_CHECK_REFERENCE(opt_feature);
         harris_feature = vxCreateArray(context_, NVX_TYPE_POINT2F, params_.array_capacity);
         NVXIO_CHECK_REFERENCE(harris_feature);
     }
@@ -389,7 +389,7 @@ namespace
         //NVXIO_SAFE_CALL( vxuColorConvert(context_, frame, frameGray) );
         NVXIO_SAFE_CALL( vxuGaussianPyramid(context_, frameGray, (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, 0)) );
         NVXIO_SAFE_CALL( nvxuHarrisTrack(context_, frameGray, harris_feature, mask, 0,
-                                         params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL) );
+                    params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL) );
         //NVXIO_SAFE_CALL( nvxuHarrisTrack(context_, frameGray, (vx_array)vxGetReferenceFromDelay(pts_delay_, 0), mask, 0,
         //                                 params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL) );
 
@@ -432,30 +432,30 @@ namespace
         NVXIO_CHECK_REFERENCE(pyr_node_);
         //vxOpticalFlowPyrLKNode
         opt_flow_node_ = vxOpticalFlowPyrLKNode(main_graph_,
-            (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, -1), (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, 0),
-            opt_in, opt_in,
-            opt_feature, VX_TERM_CRITERIA_BOTH, s_lk_epsilon, s_lk_num_iters, s_lk_use_init_est, params_.lk_win_size);
+                (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, -1), (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, 0),
+                opt_in, opt_in,
+                opt_feature, VX_TERM_CRITERIA_BOTH, s_lk_epsilon, s_lk_num_iters, s_lk_use_init_est, params_.lk_win_size);
         NVXIO_CHECK_REFERENCE(opt_flow_node_);
 
         // Extended Harris corner node
         feature_track_node_ = nvxHarrisTrackNode(main_graph_, frameGray, harris_feature, mask,
-            opt_feature, params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL);
+                opt_feature, params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL);
         NVXIO_CHECK_REFERENCE(feature_track_node_);
         std::cout<<"params_.harris_k   "<<params_.harris_k<<std::endl;
-/*
+        /*
         //vxOpticalFlowPyrLKNode
         opt_flow_node_ = vxOpticalFlowPyrLKNode(main_graph_,
-            (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, -1), (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, 0),
-            (vx_array)vxGetReferenceFromDelay(pts_delay_, -1), (vx_array)vxGetReferenceFromDelay(pts_delay_, -1),
-            kp_curr_list_, VX_TERM_CRITERIA_BOTH, s_lk_epsilon, s_lk_num_iters, s_lk_use_init_est, params_.lk_win_size);
+        (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, -1), (vx_pyramid)vxGetReferenceFromDelay(pyr_delay_, 0),
+        (vx_array)vxGetReferenceFromDelay(pts_delay_, -1), (vx_array)vxGetReferenceFromDelay(pts_delay_, -1),
+        kp_curr_list_, VX_TERM_CRITERIA_BOTH, s_lk_epsilon, s_lk_num_iters, s_lk_use_init_est, params_.lk_win_size);
         NVXIO_CHECK_REFERENCE(opt_flow_node_);
 
         // Extended Harris corner node
         feature_track_node_ = nvxHarrisTrackNode(main_graph_, frameGray, (vx_array)vxGetReferenceFromDelay(pts_delay_, 0), mask,
-            kp_curr_list_, params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL);
+        kp_curr_list_, params_.harris_k, params_.harris_thresh, params_.harris_cell_size, NULL);
         NVXIO_CHECK_REFERENCE(feature_track_node_);
         std::cout<<"params_.harris_k   "<<params_.harris_k<<std::endl;
-*/
+        */
 
         // Graph verification.
         // Note: This verification is mandatory prior to graph execution.

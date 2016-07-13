@@ -1,9 +1,9 @@
-#define BACKWARD_HAS_DW 1
-#include <backward.hpp>
-namespace backward
-{
-    backward::SignalHandling sh;
-} // namespace backward
+//#define BACKWARD_HAS_DW 1
+//#include <backward.hpp>
+//namespace backward
+//{
+//    backward::SignalHandling sh;
+//} // namespace backward
 
 #include "feature_tracker.h"
 #include <image_transport/image_transport.h>
@@ -53,10 +53,15 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         if( !trackerData[i].isInit)
         {
             trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
-            trackerData[i].isInit = true;
-            cout<<"isInit"<<endl;
+            vx_array ha_feats = trackerData[i].tracker->getHarrisFeatures();
+            vx_size vCount = 0;
+            vxQueryArray(ha_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &vCount, sizeof(vCount));
+            if (vCount == 0)
+                return;
 
-            trackerData[i].changeType( trackerData[i].tracker->getHarrisFeatures() , trackerData[i].prev_pts);
+            cout<<"isInit"<<endl;
+            trackerData[i].isInit = true;
+            trackerData[i].changeType(ha_feats, trackerData[i].prev_pts);
             //printvector(prev_pts);
             trackerData[i].tracker->optIn( trackerData[i].prev_pts);
             for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
@@ -170,12 +175,12 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                 }
                 trackerData[i].goodfeature.push_back(true);
                 channel.values.clear();
-                channel.values.push_back(uv.x);
-                channel.values.push_back(uv.y);
+                channel.values.push_back(p.x);
+                channel.values.push_back(p.y);
                 channel.values.push_back((p_id + MAX_CNT * i) * NUM_OF_CAM + i);
-                channel.values.push_back(1);
-                point.x = p.x;
-                point.y = p.y;
+                channel.values.push_back(1000.0);
+                point.x = uv.x;
+                point.y = uv.y;
                 point.z = 1;
                 feature.channels.push_back(channel);
                 feature.points.push_back(point);

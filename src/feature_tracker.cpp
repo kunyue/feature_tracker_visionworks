@@ -24,7 +24,6 @@ void FeatureTracker::changeType(vx_array vx_pt, vector<cv::Point2f> &cv_pt )
     NVXIO_SAFE_CALL( vxAccessArrayRange(vx_pt, 0, vCount, &stride,
                                         (void**)&featureData, VX_READ_ONLY) );
     int id = 0;
-
     cv_pt.resize(vCount);
     for (vx_size i = 0; i < vCount; i++)
     {
