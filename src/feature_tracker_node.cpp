@@ -22,7 +22,7 @@ int NUM_OF_CAM;
 bool SHOW_IMAGE;
 bool PUB_UV;
 uint64_t image_seq = 0;
-cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+//cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
@@ -35,7 +35,8 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     {
         cv::Mat img;
         img = bridge_ptr->image.colRange(COL * i, COL * (i + 1));
-        clahe->apply(img, trackerData[i].image);
+        //clahe->apply(img, trackerData[i].image);
+        equalizeHist(img, trackerData[i].image);
         //trackerData[i].image = img.clone();
         vx_imagepatch_addressing_t src1_addr;
         src1_addr.dim_x = img.cols;
