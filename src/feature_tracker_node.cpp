@@ -89,13 +89,13 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                 vx_array optical_feats = trackerData[i].tracker->getOpticalFeatures();
                 vx_size oCount = 0;
                 vxQueryArray(optical_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &oCount, sizeof(oCount));
+                trackerData[i].cur_pts.clear();
+                trackerData[i].cur_ids.clear();
+                trackerData[i].cur_track_cnt.clear();
+                trackerData[i].ransac_pts.clear();
                 if (oCount != 0)
                 {
-                    trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures(), trackerData[i].forw_pts);
-                    trackerData[i].cur_pts.clear();
-                    trackerData[i].cur_ids.clear();
-                    trackerData[i].cur_track_cnt.clear();
-                    trackerData[i].ransac_pts.clear();
+                    trackerData[i].changeType(optical_feats, trackerData[i].forw_pts);
                     for (unsigned int j = 0; j < trackerData[i].forw_pts.size(); j++)
                     {
                         if (trackerData[i].forw_pts[j].x != -1)
