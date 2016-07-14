@@ -22,16 +22,15 @@ int NUM_OF_CAM;
 bool SHOW_IMAGE;
 bool PUB_UV;
 uint64_t image_seq = 0;
-//cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     totalTimer.tic();
-    cout<<"img_callback"<<endl;
+    cout << "img_callback" << endl;
     cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
     image_seq ++;
 
-    for(int i = 0 ;i < NUM_OF_CAM ;i++)
+    for (int i = 0 ; i < NUM_OF_CAM ; i++)
     {
         cv::Mat img;
         img = bridge_ptr->image.colRange(COL * i, COL * (i + 1));
@@ -43,15 +42,15 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         src1_addr.dim_y = img.rows;
         src1_addr.stride_x = sizeof(vx_uint8);
         src1_addr.stride_y = img.step;
-        void *src1_ptrs[] = {
+        void *src1_ptrs[] =
+        {
             img.data
         };
 
         trackerData[i].src1 = vxCreateImageFromHandle(context, VX_DF_IMAGE_U8, &src1_addr, src1_ptrs, VX_IMPORT_TYPE_HOST);
         NVXIO_CHECK_REFERENCE(trackerData[i].src1);
 
-
-        if( !trackerData[i].isInit)
+        if ( !trackerData[i].isInit)
         {
             trackerData[i].tracker->init( trackerData[i].src1,  trackerData[i].mask);
             vx_array ha_feats = trackerData[i].tracker->getHarrisFeatures();
@@ -59,15 +58,13 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             vxQueryArray(ha_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &vCount, sizeof(vCount));
             if (vCount == 0)
                 return;
-
-            cout<<"isInit"<<endl;
+            cout << "isInit" << endl;
             trackerData[i].isInit = true;
             trackerData[i].changeType(ha_feats, trackerData[i].prev_pts);
             //printvector(prev_pts);
             trackerData[i].tracker->optIn( trackerData[i].prev_pts);
-            for(unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
+            for (unsigned int j = 0; j < trackerData[i].prev_pts.size(); j++)
             {
-
                 trackerData[i].prev_ids.push_back( trackerData[i].id_count);
                 trackerData[i].prev_track_cnt.push_back(1);
                 trackerData[i].id_count++;
@@ -79,48 +76,57 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             ROS_INFO("Tracking");
             trackerData[i].tracker->track(trackerData[i].src1, trackerData[i].mask);
             double track_ms = trackTimer.toc();
-            ROS_INFO("Track Time %f",track_ms);
-            if(trackerData[i].cnt !=0 )
+            ROS_INFO("Track Time %f", track_ms);
+            if (trackerData[i].cnt != 0 )
             {
                 ROS_INFO("Continue tracking");
-                trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() ,trackerData[i].forw_pts);
+                trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() , trackerData[i].forw_pts);
                 trackerData[i].tracker->optIn(trackerData[i].forw_pts);
             }
             else
             {
                 ROS_INFO("processing tracking result");
-                trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() ,trackerData[i].forw_pts);
-                trackerData[i].cur_pts.clear();
-                trackerData[i].cur_ids.clear();
-                trackerData[i].cur_track_cnt.clear();
-                trackerData[i].ransac_pts.clear();
-                for(unsigned int j = 0; j < trackerData[i].forw_pts.size(); j++)
+                vx_array optical_feats = trackerData[i].tracker->getOpticalFeatures();
+                vx_size oCount = 0;
+                vxQueryArray(optical_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &oCount, sizeof(oCount));
+                if (oCount != 0)
                 {
-                    if(trackerData[i].forw_pts[j].x != -1)
+                    trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures(), trackerData[i].forw_pts);
+                    trackerData[i].cur_pts.clear();
+                    trackerData[i].cur_ids.clear();
+                    trackerData[i].cur_track_cnt.clear();
+                    trackerData[i].ransac_pts.clear();
+                    for (unsigned int j = 0; j < trackerData[i].forw_pts.size(); j++)
                     {
-                        trackerData[i].cur_pts.push_back(trackerData[i].forw_pts[j]);
-                        trackerData[i].cur_ids.push_back(trackerData[i].prev_ids[j]);
-                        trackerData[i].cur_track_cnt.push_back(++trackerData[i].prev_track_cnt[j]);
-
-                        trackerData[i].ransac_pts.push_back(trackerData[i].prev_pts[j]);
+                        if (trackerData[i].forw_pts[j].x != -1)
+                        {
+                            trackerData[i].cur_pts.push_back(trackerData[i].forw_pts[j]);
+                            trackerData[i].cur_ids.push_back(trackerData[i].prev_ids[j]);
+                            trackerData[i].cur_track_cnt.push_back(++trackerData[i].prev_track_cnt[j]);
+                            trackerData[i].ransac_pts.push_back(trackerData[i].prev_pts[j]);
+                        }
+                    }
+                    //ransac begin
+                    trackerData[i].ransac_ids = trackerData[i].cur_ids;
+                    trackerData[i].ransac_track_cnt = trackerData[i].cur_track_cnt;
+                    if (RANSAC)
+                    {
+                        ROS_INFO("ransac begin");
+                        trackerData[i].ransac(trackerData[i].ransac_pts, trackerData[i].cur_pts);
                     }
                 }
-
-                //ransac begin
-                trackerData[i].ransac_ids = trackerData[i].cur_ids;
-                trackerData[i].ransac_track_cnt = trackerData[i].cur_track_cnt;
-                if(RANSAC)
-                {
-                    ROS_INFO("ransac begin");
-                    trackerData[i].ransac(trackerData[i].ransac_pts, trackerData[i].cur_pts);
-                }
-
                 ROS_INFO("Add new features");
-                trackerData[i].changeType(trackerData[i].tracker->getHarrisFeatures(), trackerData[i].harris_pts);
-                ROS_INFO("Find harris features %d",(int)trackerData[i].harris_pts.size());
-                //printvector(harris_pts);
-                trackerData[i].addFeatures();
-                ROS_INFO("Use features %d" ,(int)trackerData[i].cur_pts.size());
+                vx_array harris_feats = trackerData[i].tracker->getHarrisFeatures();
+                vx_size vCount = 0;
+                vxQueryArray(harris_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &vCount, sizeof(vCount));
+                if (vCount != 0)
+                {
+                    trackerData[i].changeType(harris_feats, trackerData[i].harris_pts);
+                    ROS_INFO("Find harris features %d", (int)trackerData[i].harris_pts.size());
+                    //printvector(harris_pts);
+                    trackerData[i].addFeatures();
+                }
+                ROS_INFO("Use features %d" , (int)trackerData[i].cur_pts.size());
                 //printresult();
                 trackerData[i].prev_pts = trackerData[i].cur_pts;
                 trackerData[i].prev_ids = trackerData[i].cur_ids;
@@ -131,7 +137,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     }
 
     //show and pub
-    if(trackerData[0].isInit && trackerData[0].cnt == 0)
+    if (trackerData[0].isInit && trackerData[0].cnt == 0)
     {
         ROS_INFO("pub_image");
         sensor_msgs::PointCloud feature;
@@ -140,7 +146,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         sensor_msgs::ChannelFloat32 channel;
         feature.header = img_msg->header;
         feature.header.seq = image_seq;
-        for(int i = 0 ;i < NUM_OF_CAM; i++)
+        for (int i = 0 ; i < NUM_OF_CAM; i++)
         {
             auto un_pts = trackerData[i].undistortedPoints(trackerData[i].cur_pts);
             auto &ids = trackerData[i].cur_ids;
@@ -156,20 +162,19 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                 uv.x = trackerData[i].cur_pts[j].x;
                 uv.y = trackerData[i].cur_pts[j].y;
                 uv.z = 1;
-
-                if(uv.y < 10 || uv.y > ROW - 10)
+                if (uv.y < 10 || uv.y > ROW - 10)
                 {
                     trackerData[i].goodfeature.push_back(false);
                     continue;
                 }
-                if(p.x!=p.x || p.y!=p.y)
+                if (p.x != p.x || p.y != p.y)
                 {
                     ROS_WARN("Nan problem!");
                     trackerData[i].goodfeature.push_back(false);
                     continue;
                 }
 
-                if(p.x > 20 || p.y > 20)
+                if (p.x > 20 || p.y > 20)
                 {
                     trackerData[i].goodfeature.push_back(false);
                     continue;
@@ -189,23 +194,19 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         }
         pub_img.publish(feature);
 
-        if(SHOW_IMAGE)
+        if (SHOW_IMAGE)
         {
-
-            ROS_INFO("Show image");
-
             nvx::Timer showTimer;
             showTimer.tic();
-
             std::vector<cv::Mat> tmp_img;
-            for(int i = 0 ;i < NUM_OF_CAM; i++)
+            for (int i = 0 ; i < NUM_OF_CAM; i++)
             {
                 cv::Mat color_img;
                 cv::cvtColor(trackerData[i].image, color_img, CV_GRAY2RGB);
                 tmp_img.push_back(color_img);
-                for(unsigned j = 0; j < trackerData[i].cur_pts.size(); j++)
+                for (unsigned j = 0; j < trackerData[i].cur_pts.size(); j++)
                 {
-                    if(trackerData[i].goodfeature[j])
+                    if (trackerData[i].goodfeature[j])
                     {
                         double len = std::min(1.0, 1.0 * trackerData[i].cur_track_cnt[j] / 20);
                         cv::circle(tmp_img[i], trackerData[i].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
@@ -216,7 +217,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             cv::Size size(COL * NUM_OF_CAM, ROW);
             cv::Mat img_merge;
             img_merge.create(size, CV_8UC3);
-            for(int i = 0 ;i < NUM_OF_CAM; i++)
+            for (int i = 0 ; i < NUM_OF_CAM; i++)
             {
                 cv::Mat block_img = img_merge(cv::Rect(i * COL, 0, COL, ROW));
                 tmp_img[i].copyTo(block_img);
@@ -226,19 +227,17 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             outMsg.header.stamp = img_msg->header.stamp;
             pub_track.publish(outMsg.toImageMsg());
             double show_ms = showTimer.toc();
-            ROS_INFO("Show Time %f",show_ms);
+            ROS_INFO("Show Time %f", show_ms);
         }
     }
     //release
-    for(int i = 0;i < NUM_OF_CAM; i++)
+    for (int i = 0; i < NUM_OF_CAM; i++)
     {
         trackerData[i].cnt = (trackerData[i].cnt + 1) % FREQ;
         vxReleaseImage(&trackerData[i].src1);
     }
-
     double total_ms = totalTimer.toc();
-    ROS_INFO("Total Time %f",total_ms);
-    cout<<endl<<endl;
+    ROS_INFO("Total Time %f \n", total_ms);
     ROS_WARN_COND(total_ms > 40, "processing over 40 ms");
 }
 
@@ -246,10 +245,10 @@ int main(int argc, char* argv[])
 {
 
     //*************************************ros_init**************************
-    ros::init(argc,argv,"feature");
+    ros::init(argc, argv, "feature");
     ros::NodeHandle n("~");
-    double harris_k, harris_thresh,ransac_thres;
-    int pyr_levels,lk_num_iters,lk_win_size,harris_cell_size,array_capacity;
+    double harris_k, harris_thresh, ransac_thres;
+    int pyr_levels, lk_num_iters, lk_win_size, harris_cell_size, array_capacity;
 
     n.getParam("harris_k", harris_k);
     n.getParam("harris_thresh", harris_thresh);
@@ -263,26 +262,20 @@ int main(int argc, char* argv[])
     n.getParam("SHOW_IMAGE", SHOW_IMAGE);
     n.getParam("PUB_UV", PUB_UV);
 
-
-    cout<<"ransac_thres    "<<ransac_thres<<endl;
-    cout<<"NUM_OF_CAM      "<<NUM_OF_CAM<<endl;
-    cout<<"pub uv   "<<PUB_UV<<endl;
-
+    cout << "ransac_thres    " << ransac_thres << endl;
+    cout << "NUM_OF_CAM      " << NUM_OF_CAM << endl;
+    cout << "pub uv   " << PUB_UV << endl;
 
     string calib_file[2];
     //n.getParam("calib_file", calib_file);
-    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    for (int i = 0 ; i < NUM_OF_CAM; i++)
     {
         n.getParam("calib_file" + to_string(i), calib_file[i]);
-        cout<<"came  "<<i <<"      calib_file    "<<calib_file[i] <<endl;
+        cout << "came  " << i << "      calib_file    " << calib_file[i] << endl;
 
     }
 
-    //cout<<"calib_file"<<calib_file<<endl;
-
-
     nvx::FeatureTracker::HarrisPyrLKParams params;
-
     params.pyr_levels = pyr_levels;
     params.lk_num_iters = lk_num_iters;
     params.lk_win_size = lk_win_size;
@@ -290,7 +283,6 @@ int main(int argc, char* argv[])
     params.harris_thresh = harris_thresh;
     params.harris_cell_size = harris_cell_size;
     params.array_capacity = array_capacity;
-
 
     // load mask
     cv::Mat mask_image;
@@ -302,15 +294,15 @@ int main(int argc, char* argv[])
     src1_addr.dim_y = mask_image.rows;
     src1_addr.stride_x = sizeof(vx_uint8);
     src1_addr.stride_y = mask_image.step;
-    void *src1_ptrs[] = {
+    void *src1_ptrs[] =
+    {
         mask_image.data
     };
 
     mask = vxCreateImageFromHandle(context, VX_DF_IMAGE_U8, &src1_addr, src1_ptrs, VX_IMPORT_TYPE_HOST);
     NVXIO_CHECK_REFERENCE(mask);
 
-
-    for(int i = 0 ;i < NUM_OF_CAM; i++)
+    for (int i = 0 ; i < NUM_OF_CAM; i++)
     {
         trackerData[i].m_camera = CameraFactory::instance()->generateCameraFromYamlFile(calib_file[i]);
         trackerData[i].tracker = nvx::FeatureTracker::createHarrisPyrLK(context, params);
@@ -320,7 +312,7 @@ int main(int argc, char* argv[])
     }
 
     ros::Subscriber sub_img = n.subscribe("image_raw", 10, img_callback);
-    pub_img = n.advertise<sensor_msgs::PointCloud>("features",1000);
+    pub_img = n.advertise<sensor_msgs::PointCloud>("features", 1000);
     pub_track = n.advertise<sensor_msgs::Image>("out_img", 10);
 
     ros::spin();
