@@ -1,7 +1,5 @@
 <launch>
 
-    <node name="rosbag" pkg="rosbag" type="play" respawn="false" args="--delay=1 --queue=1000 /media/ubuntu/Tony-hd/bag/MH_01_easy.bag" />
-
     <node pkg="image_filter" type="image_filter_node" name="image_filter" output="screen">
         <remap from="~image1" to="/cam0/image_raw"/>
         <remap from="~image2" to="/cam1/image_raw"/>

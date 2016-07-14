@@ -87,7 +87,7 @@ break_out1:
         }
     }
     now_num = new_cur_pts.size();
-    ROS_INFO("Delete %d features", prev_num - now_num);
+    //ROS_INFO("Delete %d features", prev_num - now_num);
 
     prev_num = now_num;
     for (auto & p : harris_pts)
@@ -132,7 +132,7 @@ break_out2:
         }
     }
     now_num = new_cur_pts.size();
-    ROS_INFO("add %d features", now_num - prev_num);
+    //ROS_INFO("add %d features", now_num - prev_num);
     cur_pts = new_cur_pts;
     cur_track_cnt = new_cur_track_cnt;
     cur_ids = new_cur_ids;
@@ -159,7 +159,7 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         Eigen::Vector2d a(v[i].x, v[i].y), re_pro;
         Eigen::Vector3d b;
         m_camera->liftProjective(a, b);
-        if (b.z() == b.z())
+        if (!std::isnan(b.norm()))
             un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
         else //if (b.z() != b.z())
             ROS_WARN_COND(b.z() != b.z(), "nan false");

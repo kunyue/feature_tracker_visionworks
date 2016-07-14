@@ -26,7 +26,6 @@ uint64_t image_seq = 0;
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     totalTimer.tic();
-    cout << "img_callback" << endl;
     cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
     image_seq ++;
 
@@ -58,7 +57,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             vxQueryArray(ha_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &vCount, sizeof(vCount));
             if (vCount == 0)
                 return;
-            cout << "isInit" << endl;
+            ROS_INFO("CAM %d: initialized!", i);
             trackerData[i].isInit = true;
             trackerData[i].changeType(ha_feats, trackerData[i].prev_pts);
             //printvector(prev_pts);
@@ -73,19 +72,30 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         else
         {
             trackTimer.tic();
-            ROS_INFO("Tracking");
+            //ROS_INFO("Tracking");
             trackerData[i].tracker->track(trackerData[i].src1, trackerData[i].mask);
             double track_ms = trackTimer.toc();
             ROS_INFO("Track Time %f", track_ms);
             if (trackerData[i].cnt != 0 )
             {
-                ROS_INFO("Continue tracking");
-                trackerData[i].changeType(trackerData[i].tracker->getOpticalFeatures() , trackerData[i].forw_pts);
-                trackerData[i].tracker->optIn(trackerData[i].forw_pts);
+                //ROS_INFO("Continue tracking");
+                vx_array optical_feats = trackerData[i].tracker->getOpticalFeatures();
+                vx_size oCount = 0;
+                vxQueryArray(optical_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &oCount, sizeof(oCount));
+                if (oCount != 0)
+                {
+                    trackerData[i].changeType(optical_feats, trackerData[i].forw_pts);
+                    trackerData[i].tracker->optIn(trackerData[i].forw_pts);
+                }
+                else
+                {
+                    ROS_WARN("BACK to INITIALIZATION!");
+                    trackerData[i].isInit = false;
+                }
             }
             else
             {
-                ROS_INFO("processing tracking result");
+                ///ROS_INFO("processing tracking result");
                 vx_array optical_feats = trackerData[i].tracker->getOpticalFeatures();
                 vx_size oCount = 0;
                 vxQueryArray(optical_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &oCount, sizeof(oCount));
@@ -111,27 +121,39 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                     trackerData[i].ransac_track_cnt = trackerData[i].cur_track_cnt;
                     if (RANSAC)
                     {
-                        ROS_INFO("ransac begin");
+                        //ROS_INFO("ransac begin");
                         trackerData[i].ransac(trackerData[i].ransac_pts, trackerData[i].cur_pts);
                     }
                 }
-                ROS_INFO("Add new features");
+                //ROS_INFO("Add new features");
                 vx_array harris_feats = trackerData[i].tracker->getHarrisFeatures();
                 vx_size vCount = 0;
                 vxQueryArray(harris_feats, VX_ARRAY_ATTRIBUTE_NUMITEMS, &vCount, sizeof(vCount));
                 if (vCount != 0)
                 {
                     trackerData[i].changeType(harris_feats, trackerData[i].harris_pts);
-                    ROS_INFO("Find harris features %d", (int)trackerData[i].harris_pts.size());
+                    //ROS_INFO("Find harris features %d", (int)trackerData[i].harris_pts.size());
                     //printvector(harris_pts);
                     trackerData[i].addFeatures();
                 }
-                ROS_INFO("Use features %d" , (int)trackerData[i].cur_pts.size());
+                //ROS_INFO("Use features %d ttt" , (int)trackerData[i].cur_pts.size());
                 //printresult();
-                trackerData[i].prev_pts = trackerData[i].cur_pts;
-                trackerData[i].prev_ids = trackerData[i].cur_ids;
-                trackerData[i].prev_track_cnt = trackerData[i].cur_track_cnt;
-                trackerData[i].tracker->optIn(trackerData[i].cur_pts);
+                if (trackerData[i].cur_pts.size() == 0)
+                {
+                    ROS_WARN("BACK to INITIALIZATION!");
+                    trackerData[i].prev_pts.clear();
+                    trackerData[i].prev_ids.clear();
+                    trackerData[i].prev_track_cnt = trackerData[i].cur_track_cnt;
+                    //trackerData[i].tracker->optIn(trackerData[i].cur_pts);
+                    trackerData[i].isInit = false;
+                }
+                else
+                {
+                    trackerData[i].prev_pts = trackerData[i].cur_pts;
+                    trackerData[i].prev_ids = trackerData[i].cur_ids;
+                    trackerData[i].prev_track_cnt = trackerData[i].cur_track_cnt;
+                    trackerData[i].tracker->optIn(trackerData[i].cur_pts);
+                }
             }
         }
     }
@@ -139,7 +161,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     //show and pub
     if (trackerData[0].isInit && trackerData[0].cnt == 0)
     {
-        ROS_INFO("pub_image");
+        //ROS_INFO("pub_image");
         sensor_msgs::PointCloud feature;
         //sensor_msgs::ChannelFloat32 id_of_point;
         geometry_msgs::Point32 point;
@@ -227,7 +249,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
             outMsg.header.stamp = img_msg->header.stamp;
             pub_track.publish(outMsg.toImageMsg());
             double show_ms = showTimer.toc();
-            ROS_INFO("Show Time %f", show_ms);
+            //ROS_INFO("Show Time %f", show_ms);
         }
     }
     //release
@@ -267,7 +289,6 @@ int main(int argc, char* argv[])
     cout << "pub uv   " << PUB_UV << endl;
 
     string calib_file[2];
-    //n.getParam("calib_file", calib_file);
     for (int i = 0 ; i < NUM_OF_CAM; i++)
     {
         n.getParam("calib_file" + to_string(i), calib_file[i]);
