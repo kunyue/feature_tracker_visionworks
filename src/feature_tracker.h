@@ -34,7 +34,7 @@
 #include "camodocal/camera_models/CataCamera.h"
 
 #define MIN_DIST 30
-#define MAX_CNT 150
+#define MAX_CNT 5000
 #define FREQ 3
 #define RANSAC true
 
@@ -54,6 +54,7 @@ class FeatureTracker
 		void printresult();
 		void printvector(vector<cv::Point2f> &v);
 		vector<cv::Point2f> undistortedPoints(std::vector<cv::Point2f> v);
+		vector<cv::Point3f> undistortedPoints_pub(std::vector<cv::Point2f> v);
 		void ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point2f> curr);
 
 		int cnt ;

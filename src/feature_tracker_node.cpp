@@ -117,6 +117,8 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                         }
                     }
                     //ransac begin
+                    track_ms = trackTimer.toc();
+                    ROS_INFO("rb %f", track_ms);
                     trackerData[i].ransac_ids = trackerData[i].cur_ids;
                     trackerData[i].ransac_track_cnt = trackerData[i].cur_track_cnt;
                     if (RANSAC)
@@ -124,6 +126,8 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                         //ROS_INFO("ransac begin");
                         trackerData[i].ransac(trackerData[i].ransac_pts, trackerData[i].cur_pts);
                     }
+                    track_ms = trackTimer.toc();
+                    ROS_INFO("re %f", track_ms);
                 }
                 //ROS_INFO("Add new features");
                 vx_array harris_feats = trackerData[i].tracker->getHarrisFeatures();
@@ -170,7 +174,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         feature.header.seq = image_seq;
         for (int i = 0 ; i < NUM_OF_CAM; i++)
         {
-            auto un_pts = trackerData[i].undistortedPoints(trackerData[i].cur_pts);
+            auto un_pts = trackerData[i].undistortedPoints_pub(trackerData[i].cur_pts);
             auto &ids = trackerData[i].cur_ids;
             trackerData[i].goodfeature.clear();
             for (unsigned int j = 0; j < ids.size(); j++)
@@ -179,12 +183,17 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                 geometry_msgs::Point32 p;
                 p.x = un_pts[j].x;
                 p.y = un_pts[j].y;
-                p.z = 1;
+                p.z = un_pts[j].z;
                 geometry_msgs::Point32 uv;
                 uv.x = trackerData[i].cur_pts[j].x;
                 uv.y = trackerData[i].cur_pts[j].y;
                 uv.z = 1;
                 if (uv.y < 10 || uv.y > ROW - 10)
+                {
+                    trackerData[i].goodfeature.push_back(false);
+                    continue;
+                }
+                if (p.x == 0 && p.y == 0 && p.z == 0)
                 {
                     trackerData[i].goodfeature.push_back(false);
                     continue;
@@ -195,7 +204,6 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                     trackerData[i].goodfeature.push_back(false);
                     continue;
                 }
-
                 if (p.x > 20 || p.y > 20)
                 {
                     trackerData[i].goodfeature.push_back(false);
@@ -206,7 +214,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                 channel.values.push_back(p.x);
                 channel.values.push_back(p.y);
                 channel.values.push_back((p_id + MAX_CNT * i) * NUM_OF_CAM + i);
-                channel.values.push_back(1000.0);
+                channel.values.push_back(p.z);
                 point.x = uv.x;
                 point.y = uv.y;
                 point.z = 1;

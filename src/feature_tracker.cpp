@@ -19,7 +19,7 @@ void FeatureTracker::changeType(vx_array vx_pt, vector<cv::Point2f> &cv_pt )
     vx_size stride;
     void * featureData = NULL;
     NVXIO_SAFE_CALL( vxAccessArrayRange(vx_pt, 0, vCount, &stride,
-                                        (void**)&featureData, VX_READ_ONLY) );
+                (void**)&featureData, VX_READ_ONLY) );
     int id = 0;
     cv_pt.resize(vCount);
     for (vx_size i = 0; i < vCount; i++)
@@ -92,7 +92,7 @@ break_out1:
     prev_num = now_num;
     for (auto & p : harris_pts)
     {
-        if ((int)new_cur_pts.size() >= MAX_CNT)
+        if ((int)new_cur_pts.size() >= 150)
         {
             ROS_INFO("number of points > max_cnt, do not add new features");
             break;
@@ -128,6 +128,8 @@ break_out2:
             new_cur_pts.push_back(p);
             new_cur_ids.push_back(id_count);
             id_count++;
+            if (id_count >= MAX_CNT)
+                id_count = 0;
             new_cur_track_cnt.push_back(1);
         }
     }
@@ -159,10 +161,31 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
         Eigen::Vector2d a(v[i].x, v[i].y), re_pro;
         Eigen::Vector3d b;
         m_camera->liftProjective(a, b);
-        if (!std::isnan(b.norm()))
-            un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
-        else //if (b.z() != b.z())
-            ROS_WARN_COND(b.z() != b.z(), "nan false");
+        un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
+        if (std::isnan(b.norm()))
+            ROS_WARN("nan false");
+    }
+    return un_pts;
+}
+
+vector<cv::Point3f> FeatureTracker::undistortedPoints_pub(std::vector<cv::Point2f> v)
+{
+    vector<cv::Point3f> un_pts;
+    for (unsigned int i = 0; i < v.size(); i++)
+    {
+        Eigen::Vector2d a(v[i].x, v[i].y), a_c(v[i].x + 0.01, v[i].y),re_pro;
+        Eigen::Vector3d b, c;
+        Eigen::Vector2d b_n, c_n;
+        m_camera->liftProjective(a, b);
+        if (std::isnan(b.norm()) || b.z() < 1e-3)
+            un_pts.push_back(cv::Point3f(0.0, 0.0, 0.0));
+        else
+        {
+            m_camera->liftProjective(a_c, c);
+            b_n = Eigen::Vector2d(b.x()/b.z(), b.y()/b.z());
+            c_n = Eigen::Vector2d(c.x()/c.z(), c.y()/c.z());
+            un_pts.push_back(cv::Point3f(b.x() / b.z(), b.y() / b.z(), 100 * abs(b_n.norm() - c_n.norm())));
+        }
     }
     return un_pts;
 }
@@ -177,7 +200,7 @@ void FeatureTracker::ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point
     std::vector<cv::Point2f> prev_un = undistortedPoints(prev);
     std::vector<cv::Point2f> curr_un = undistortedPoints(curr);
     //cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, ransac_thres, 0.99, status);
-    static double rans_t = 1.0 / 420.0; //--> on feature
+    static double rans_t = 1.0 / 200.0; //--> on feature
     cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, rans_t, 0.99, status);
     int num = curr.size();
     cur_pts.clear();
