@@ -27,7 +27,6 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     totalTimer.tic();
     cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
-    image_seq ++;
 
     for (int i = 0 ; i < NUM_OF_CAM ; i++)
     {
@@ -172,6 +171,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         sensor_msgs::ChannelFloat32 channel;
         feature.header = img_msg->header;
         feature.header.seq = image_seq;
+        image_seq ++;
         for (int i = 0 ; i < NUM_OF_CAM; i++)
         {
             auto un_pts = trackerData[i].undistortedPoints_pub(trackerData[i].cur_pts);
@@ -213,13 +213,19 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                 channel.values.clear();
                 channel.values.push_back(p.x);
                 channel.values.push_back(p.y);
-                channel.values.push_back((p_id + MAX_CNT * i) * NUM_OF_CAM + i);
-                channel.values.push_back(p.z);
+                channel.values.push_back(p_id + (MAX_CNT * i));
+                channel.values.push_back(un_pts[j].z);
+                //channel.values.push_back(1000.0);
                 point.x = uv.x;
                 point.y = uv.y;
                 point.z = 1;
-                feature.channels.push_back(channel);
-                feature.points.push_back(point);
+                //if (i == 1)
+                {
+                    //printf("%.3f \t %.3f \t %.6f \t %.6f \t  %.6f\t\n",
+                    //        uv.x, uv.y, un_pts[j].x, un_pts[j].y, sqrt(un_pts[j].z));
+                    feature.channels.push_back(channel);
+                    feature.points.push_back(point);
+                }
             }
         }
         pub_img.publish(feature);
@@ -340,8 +346,8 @@ int main(int argc, char* argv[])
         //trackerData[i].mask = NULL;
     }
 
-    ros::Subscriber sub_img = n.subscribe("image_raw", 10, img_callback);
-    pub_img = n.advertise<sensor_msgs::PointCloud>("features", 1000);
+    ros::Subscriber sub_img = n.subscribe("image_raw", 20, img_callback, ros::TransportHints().tcpNoDelay());
+    pub_img = n.advertise<sensor_msgs::PointCloud>("features", 10);
     pub_track = n.advertise<sensor_msgs::Image>("out_img", 10);
 
     ros::spin();

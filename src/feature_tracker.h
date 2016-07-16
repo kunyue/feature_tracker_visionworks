@@ -35,7 +35,7 @@
 
 #define MIN_DIST 30
 #define MAX_CNT 5000
-#define FREQ 3
+#define FREQ 1
 #define RANSAC true
 
 const int ROW = 480;

@@ -92,7 +92,7 @@ break_out1:
     prev_num = now_num;
     for (auto & p : harris_pts)
     {
-        if ((int)new_cur_pts.size() >= 150)
+        if ((int)new_cur_pts.size() >= 50)
         {
             ROS_INFO("number of points > max_cnt, do not add new features");
             break;
@@ -170,10 +170,14 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints(std::vector<cv::Point2f> v
 
 vector<cv::Point3f> FeatureTracker::undistortedPoints_pub(std::vector<cv::Point2f> v)
 {
+    static double row_2 = ROW / 2.0;
+    static double col_2 = COL / 2.0;
     vector<cv::Point3f> un_pts;
     for (unsigned int i = 0; i < v.size(); i++)
     {
-        Eigen::Vector2d a(v[i].x, v[i].y), a_c(v[i].x + 0.01, v[i].y),re_pro;
+        Eigen::Vector2d poi(v[i].x - col_2, v[i].y - row_2);
+        poi = poi / poi.norm();
+        Eigen::Vector2d a(v[i].x, v[i].y), a_c(v[i].x + poi.x(), v[i].y + poi.y());
         Eigen::Vector3d b, c;
         Eigen::Vector2d b_n, c_n;
         m_camera->liftProjective(a, b);
@@ -181,10 +185,12 @@ vector<cv::Point3f> FeatureTracker::undistortedPoints_pub(std::vector<cv::Point2
             un_pts.push_back(cv::Point3f(0.0, 0.0, 0.0));
         else
         {
-            m_camera->liftProjective(a_c, c);
             b_n = Eigen::Vector2d(b.x()/b.z(), b.y()/b.z());
+            m_camera->liftProjective(a_c, c);
             c_n = Eigen::Vector2d(c.x()/c.z(), c.y()/c.z());
-            un_pts.push_back(cv::Point3f(b.x() / b.z(), b.y() / b.z(), 100 * abs(b_n.norm() - c_n.norm())));
+            double variance = (c_n.x() - b_n.x()) * (c_n.x() - b_n.x())
+                + (c_n.y() - b_n.y()) * (c_n.y() - b_n.y());
+            un_pts.push_back(cv::Point3f(b.x() / b.z(), b.y() / b.z(), variance));
         }
     }
     return un_pts;
@@ -200,7 +206,7 @@ void FeatureTracker::ransac(std::vector<cv::Point2f> prev, std::vector<cv::Point
     std::vector<cv::Point2f> prev_un = undistortedPoints(prev);
     std::vector<cv::Point2f> curr_un = undistortedPoints(curr);
     //cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, ransac_thres, 0.99, status);
-    static double rans_t = 1.0 / 200.0; //--> on feature
+    static double rans_t = 1.0 / 100.0; //--> on feature
     cv::findFundamentalMat(prev_un, curr_un, cv::FM_RANSAC, rans_t, 0.99, status);
     int num = curr.size();
     cur_pts.clear();
